@@ -1,4 +1,6 @@
-﻿namespace Entities.App;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Entities.App;
 
 public class TrainingGroup : BaseEntity
 {
@@ -6,4 +8,7 @@ public class TrainingGroup : BaseEntity
     public ICollection<TrainingGroupUser>? Students { get; set; }
     public User? Coach { get; set; }
     public int CoachId { get; set; }
+    
+    [NotMapped]
+    public ICollection<DateTime>? TrainingTimes { get; set; }
 }

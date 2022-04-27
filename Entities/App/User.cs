@@ -19,4 +19,7 @@ public class User : IdentityUser<int>
     public ICollection<TrainingGroupUser>? TrainingGroups { get; set; }
 
     public ICollection<TrainingGroup>? TeachingGroups { get; set; }
+    public ICollection<Blog>? Blogs { get; set; }
+    
+    public ICollection<UserRole> UserRoles { get; set; }
 }
