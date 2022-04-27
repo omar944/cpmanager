@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.Data.Migrations
 {
-    public partial class test1 : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -55,6 +55,20 @@ namespace API.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tag",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tag", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,7 +192,28 @@ namespace API.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CodeforcesAccount",
+                name: "Blogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Content = table.Column<string>(type: "TEXT", nullable: true),
+                    Photo = table.Column<string>(type: "TEXT", nullable: true),
+                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Blogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Blogs_AspNetUsers_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CodeforceseAccounts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -204,9 +239,9 @@ namespace API.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CodeforcesAccount", x => x.Id);
+                    table.PrimaryKey("PK_CodeforceseAccounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CodeforcesAccount_AspNetUsers_CodeforcesAccountForeignKey",
+                        name: "FK_CodeforceseAccounts_AspNetUsers_CodeforcesAccountForeignKey",
                         column: x => x.CodeforcesAccountForeignKey,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -214,29 +249,50 @@ namespace API.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Participation",
+                name: "TrainingGroups",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    TeamId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    CoachId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingGroups", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingGroups_AspNetUsers_CoachId",
+                        column: x => x.CoachId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Participations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Rank = table.Column<int>(type: "INTEGER", nullable: false),
                     Year = table.Column<string>(type: "TEXT", nullable: true),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Location = table.Column<string>(type: "TEXT", nullable: true),
+                    TeamId = table.Column<int>(type: "INTEGER", nullable: true),
                     UserId = table.Column<int>(type: "INTEGER", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Participation", x => x.Id);
+                    table.PrimaryKey("PK_Participations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Participation_AspNetUsers_UserId",
+                        name: "FK_Participations_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Participation_Teams_TeamId",
+                        name: "FK_Participations_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id");
@@ -264,6 +320,129 @@ namespace API.Data.Migrations
                         principalTable: "Teams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DailyTasks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    GroupId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DailyTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DailyTasks_TrainingGroups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "TrainingGroups",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrainingGroupUser",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TrainingGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingGroupUser", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingGroupUser_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TrainingGroupUser_TrainingGroups_TrainingGroupId",
+                        column: x => x.TrainingGroupId,
+                        principalTable: "TrainingGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Problems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ContestId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Index = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Type = table.Column<string>(type: "TEXT", nullable: true),
+                    Rating = table.Column<int>(type: "INTEGER", nullable: false),
+                    DailyTaskId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Problems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Problems_DailyTasks_DailyTaskId",
+                        column: x => x.DailyTaskId,
+                        principalTable: "DailyTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProblemTag",
+                columns: table => new
+                {
+                    ProblemsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProblemTag", x => new { x.ProblemsId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_ProblemTag_Problems_ProblemsId",
+                        column: x => x.ProblemsId,
+                        principalTable: "Problems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProblemTag_Tag_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tag",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Submissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ProblemId = table.Column<int>(type: "INTEGER", nullable: true),
+                    ProgrammingLanguage = table.Column<string>(type: "TEXT", nullable: true),
+                    Verdict = table.Column<string>(type: "TEXT", nullable: true),
+                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Submissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Submissions_AspNetUsers_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Submissions_Problems_ProblemId",
+                        column: x => x.ProblemId,
+                        principalTable: "Problems",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -304,25 +483,70 @@ namespace API.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CodeforcesAccount_CodeforcesAccountForeignKey",
-                table: "CodeforcesAccount",
+                name: "IX_Blogs_AuthorId",
+                table: "Blogs",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CodeforceseAccounts_CodeforcesAccountForeignKey",
+                table: "CodeforceseAccounts",
                 column: "CodeforcesAccountForeignKey",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Participation_TeamId",
-                table: "Participation",
+                name: "IX_DailyTasks_GroupId",
+                table: "DailyTasks",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Participations_TeamId",
+                table: "Participations",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Participation_UserId",
-                table: "Participation",
+                name: "IX_Participations_UserId",
+                table: "Participations",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Problems_DailyTaskId",
+                table: "Problems",
+                column: "DailyTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProblemTag_TagsId",
+                table: "ProblemTag",
+                column: "TagsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Submissions_AuthorId",
+                table: "Submissions",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Submissions_ProblemId",
+                table: "Submissions",
+                column: "ProblemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TeamUser_TeamsId",
                 table: "TeamUser",
                 column: "TeamsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingGroups_CoachId",
+                table: "TrainingGroups",
+                column: "CoachId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingGroupUser_TrainingGroupId",
+                table: "TrainingGroupUser",
+                column: "TrainingGroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingGroupUser_UserId",
+                table: "TrainingGroupUser",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -343,22 +567,46 @@ namespace API.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "CodeforcesAccount");
+                name: "Blogs");
 
             migrationBuilder.DropTable(
-                name: "Participation");
+                name: "CodeforceseAccounts");
+
+            migrationBuilder.DropTable(
+                name: "Participations");
+
+            migrationBuilder.DropTable(
+                name: "ProblemTag");
+
+            migrationBuilder.DropTable(
+                name: "Submissions");
 
             migrationBuilder.DropTable(
                 name: "TeamUser");
 
             migrationBuilder.DropTable(
+                name: "TrainingGroupUser");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Tag");
+
+            migrationBuilder.DropTable(
+                name: "Problems");
 
             migrationBuilder.DropTable(
                 name: "Teams");
+
+            migrationBuilder.DropTable(
+                name: "DailyTasks");
+
+            migrationBuilder.DropTable(
+                name: "TrainingGroups");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

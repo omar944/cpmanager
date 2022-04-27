@@ -1,12 +1,15 @@
-﻿using Entities.App;
+﻿using CodeforcesTool.Services;
+using Entities.App;
+using Entities.Codeforces;
 
 namespace API.Data;
 
 public static class Seed
 {
-    public static async Task SeedUsers(UserManager<User> userManager,RoleManager<Role> roleManager,AppDbContext context)
+    public static async Task SeedUsers(UserManager<User> userManager, RoleManager<Role> roleManager,
+        AppDbContext context, CodeforcesApiService apiService,IMapper mapper)
     {
-        if(await userManager.Users.AnyAsync())return;
+        if (await userManager.Users.AnyAsync()) return;
 
         // var userData = await File.ReadAllTextAsync("Data/UserSeedData.json");
         // var users = JsonSerializer.Deserialize<List<User>>(userData);
@@ -24,13 +27,16 @@ public static class Seed
             await roleManager.CreateAsync(role);
         }
 
+        var account = await apiService.GetUserAsync("omar94");
+        
         var users = new List<User>()
         {
-            new() {UserName = "omar"},
+            new() {UserName = "omar",CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)},
             new() {UserName = "ahmad"},
-            new() {UserName="ali"},
+            new() {UserName = "ali"},
         };
-        foreach(var user in users)
+        
+        foreach (var user in users)
         {
             user.UserName = user.UserName.ToLower();
             await userManager.CreateAsync(user, "123.com.net");
@@ -41,7 +47,7 @@ public static class Seed
         {
             UserName = "admin"
         };
-        await userManager.CreateAsync(admin,"123.com.net");
+        await userManager.CreateAsync(admin, "123.com.net");
         await userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
 
         var team = new Team
@@ -56,26 +62,26 @@ public static class Seed
             Rank = 1,
             Name = "ICPC 2020",
             Year = "2020",
-            Team=team,
-            User=await context.Users.FindAsync(1)
+            Team = team,
+            User = await context.Users.FindAsync(1)
         };
         await context.Participations.AddAsync(participation);
 
         var group = new TrainingGroup
         {
             Name = "advanced",
-            Coach=await context.Users.FindAsync(1),
+            Coach = await context.Users.FindAsync(1),
         };
         await context.TrainingGroups.AddAsync(group);
         await context.SaveChangesAsync();
         group = await context.TrainingGroups.FindAsync(1);
         var trainees = new List<TrainingGroupUser>
         {
-            new(){TrainingGroup=group,User = await context.Users.FindAsync(2)},
-            new(){TrainingGroup=group,User = await context.Users.FindAsync(3)}
+            new() {TrainingGroup = group, User = await context.Users.FindAsync(2)},
+            new() {TrainingGroup = group, User = await context.Users.FindAsync(3)}
         };
         group.Students = trainees;
-        
+
         await context.SaveChangesAsync();
     }
 }

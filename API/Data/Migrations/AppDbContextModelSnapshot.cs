@@ -17,6 +17,56 @@ namespace API.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.4");
 
+            modelBuilder.Entity("Entities.App.Blog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Photo")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("Blogs");
+                });
+
+            modelBuilder.Entity("Entities.App.DailyTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("DailyTasks");
+                });
+
             modelBuilder.Entity("Entities.App.Participation", b =>
                 {
                     b.Property<int>("Id")
@@ -229,6 +279,21 @@ namespace API.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Entities.App.UserRole", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
             modelBuilder.Entity("Entities.Codeforces.CodeforcesAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -294,7 +359,7 @@ namespace API.Data.Migrations
                     b.HasIndex("CodeforcesAccountForeignKey")
                         .IsUnique();
 
-                    b.ToTable("CodeforcesAccount");
+                    b.ToTable("CodeforceseAccounts");
                 });
 
             modelBuilder.Entity("Entities.Codeforces.Problem", b =>
@@ -309,6 +374,9 @@ namespace API.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("DailyTaskId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Index")
                         .HasColumnType("TEXT");
 
@@ -322,6 +390,8 @@ namespace API.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DailyTaskId");
 
                     b.ToTable("Problems");
                 });
@@ -438,21 +508,6 @@ namespace API.Data.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.Property<int>("UserId")
@@ -502,6 +557,24 @@ namespace API.Data.Migrations
                     b.ToTable("TeamUser");
                 });
 
+            modelBuilder.Entity("Entities.App.Blog", b =>
+                {
+                    b.HasOne("Entities.App.User", "Author")
+                        .WithMany("Blogs")
+                        .HasForeignKey("AuthorId");
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Entities.App.DailyTask", b =>
+                {
+                    b.HasOne("Entities.App.TrainingGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId");
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("Entities.App.Participation", b =>
                 {
                     b.HasOne("Entities.App.Team", "Team")
@@ -547,6 +620,25 @@ namespace API.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Entities.App.UserRole", b =>
+                {
+                    b.HasOne("Entities.App.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.App.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Entities.Codeforces.CodeforcesAccount", b =>
                 {
                     b.HasOne("Entities.App.User", "Owner")
@@ -556,6 +648,13 @@ namespace API.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Entities.Codeforces.Problem", b =>
+                {
+                    b.HasOne("Entities.App.DailyTask", null)
+                        .WithMany("Problem")
+                        .HasForeignKey("DailyTaskId");
                 });
 
             modelBuilder.Entity("Entities.Codeforces.Submission", b =>
@@ -593,21 +692,6 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("Entities.App.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.HasOne("Entities.App.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.App.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -654,6 +738,16 @@ namespace API.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Entities.App.DailyTask", b =>
+                {
+                    b.Navigation("Problem");
+                });
+
+            modelBuilder.Entity("Entities.App.Role", b =>
+                {
+                    b.Navigation("UserRoles");
+                });
+
             modelBuilder.Entity("Entities.App.TrainingGroup", b =>
                 {
                     b.Navigation("Students");
@@ -661,6 +755,8 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("Entities.App.User", b =>
                 {
+                    b.Navigation("Blogs");
+
                     b.Navigation("CodeforcesAccount");
 
                     b.Navigation("Participations");
@@ -668,6 +764,8 @@ namespace API.Data.Migrations
                     b.Navigation("TeachingGroups");
 
                     b.Navigation("TrainingGroups");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

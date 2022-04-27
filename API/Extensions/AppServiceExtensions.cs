@@ -3,7 +3,6 @@ using API.Data;
 using API.Interfaces;
 using API.Services;
 using CodeforcesTool.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions;
 
@@ -14,8 +13,10 @@ public static class AppServiceExtensions
         services.AddScoped<ITokenService,TokenService>();
         
         services.AddAutoMapper(typeof(AutoMapperConfiguration).Assembly);
-        
+
         services.AddScoped<IUserRepository, UserRepository>();
+        
+        services.AddScoped(typeof(IRepository<>),typeof(Repository<>));
         
         services.AddDbContext<AppDbContext>(options =>
         {

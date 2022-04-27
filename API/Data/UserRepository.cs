@@ -23,7 +23,7 @@ public class UserRepository : IUserRepository
         _users.Update(user);
     }
 
-    public async Task<User?> GetUserByIdAsync(int id)
+    public async Task<User> GetUserByIdAsync(int id)
     {
         return await _users.FindAsync(id);
     }

@@ -4,7 +4,9 @@ using API.Interfaces;
 
 namespace API.Controllers;
 
-public class AccountController:BaseController
+[ApiController]
+[Route("api/[controller]")]
+public class AccountController:ControllerBase
 {
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;

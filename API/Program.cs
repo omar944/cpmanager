@@ -1,5 +1,6 @@
 using API.Data;
 using API.Extensions;
+using CodeforcesTool.Services;
 using Entities.App;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -38,8 +40,10 @@ try
     var userManager = services.GetRequiredService<UserManager<User>>();
     var roleManager = services.GetRequiredService<RoleManager<Role>>();
     var dbContext = services.GetRequiredService<AppDbContext>();
+    var apiService = services.GetRequiredService<CodeforcesApiService>();
+    var mapper=services.GetRequiredService<IMapper>();
     await context.Database.MigrateAsync();
-    await Seed.SeedUsers(userManager, roleManager,dbContext);
+    await Seed.SeedUsers(userManager, roleManager,dbContext,apiService,mapper);
 }
 catch (Exception e)
 {

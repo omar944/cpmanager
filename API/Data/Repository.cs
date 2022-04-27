@@ -18,6 +18,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         return await _entities.ToListAsync();
     }
 
+    public IQueryable<TEntity> GetQuery()
+    {
+        return _entities.AsQueryable();
+    }
+
     public async Task<TEntity?> GetAsync(int id)
     {
         return await _entities.SingleOrDefaultAsync(e => e.Id == id);
@@ -33,7 +38,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         _entities.Remove(entity);
     }
 
-    public async Task<bool> SavaChangesAsync()
+    public async Task<bool> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync() > 0;
     }

@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using CodeforcesTool.Models;
 using Entities.App;
 using Entities.Codeforces;
 
@@ -33,7 +34,7 @@ public class AutoMapperConfiguration : Profile
         
         CreateMap<User, string>().ConvertUsing(u => u.UserName);
         CreateMap<CodeforcesAccount, string>().ConvertUsing(u => u.Handle ?? "");
-        
-        
+
+        CreateMap<CodeforcesUserDto, CodeforcesAccount>();
     }
 }
