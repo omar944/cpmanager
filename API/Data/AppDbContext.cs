@@ -13,16 +13,16 @@ public class AppDbContext : IdentityDbContext<User, Role, int
     }
 
     //App
-    public DbSet<Team>? Teams { get; set; }
-    public DbSet<TrainingGroup>? TrainingGroups { get; set; }
-    public DbSet<Participation>? Participations { get; set; }
-    public DbSet<DailyTask>? DailyTasks { get; set; }
-    public DbSet<Blog>? Blogs { get; set; }
+    public DbSet<Team> Teams { get; set; } = null!;
+    public DbSet<TrainingGroup> TrainingGroups { get; set; } = null!;
+    public DbSet<Participation> Participations { get; set; } = null!;
+    public DbSet<DailyTask> DailyTasks { get; set; } = null!;
+    public DbSet<Blog> Blogs { get; set; } = null!;
 
     //codeforces
-    public DbSet<Problem>? Problems { get; set; }
-    public DbSet<Submission>? Submissions { get; set; }
-    public DbSet<CodeforcesAccount> CodeforceseAccounts { get; set; }
+    public DbSet<Problem> Problems { get; set; } = null!;
+    public DbSet<Submission> Submissions { get; set; } = null!;
+    public DbSet<CodeforcesAccount> CodeforceseAccounts { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

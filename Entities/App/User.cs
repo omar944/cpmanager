@@ -14,12 +14,12 @@ public class User : IdentityUser<int>
     public string? Faculty { get; set; }
     public string? ProfilePhoto { get; set; }
 
-    public ICollection<Team> Teams { get; set; }
+    public ICollection<Team>? Teams { get; set; }
     public ICollection<Participation>? Participations { get; set; }
     public ICollection<TrainingGroupUser>? TrainingGroups { get; set; }
 
     public ICollection<TrainingGroup>? TeachingGroups { get; set; }
     public ICollection<Blog>? Blogs { get; set; }
-    
-    public ICollection<UserRole> UserRoles { get; set; }
+
+    public ICollection<UserRole> UserRoles { get; set; } = null!;
 }

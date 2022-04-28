@@ -25,7 +25,8 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetUserByIdAsync(int id)
     {
-        return await _users.FindAsync(id);
+        var ret = await _users.FindAsync(id);
+        return ret!;
     }
 
     public async Task<User?> GetUserByUsernameAsync(string username)
@@ -33,12 +34,12 @@ public class UserRepository : IUserRepository
         return await _users.SingleOrDefaultAsync(x => x.UserName == username);
     }
 
-    public async Task<List<UserDto>> GetUsersProfilesAsync()
+    public async Task<IEnumerable<UserDto>> GetUsersProfilesAsync()
     {
         return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
-    public async Task<List<User>> GetUsersAsync()
+    public async Task<IEnumerable<User>> GetUsersAsync()
     {
         return await _users.ToListAsync();
     }

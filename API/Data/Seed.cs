@@ -1,6 +1,7 @@
 ﻿using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
+#pragma warning disable CS8601
 
 namespace API.Data;
 
@@ -80,7 +81,7 @@ public static class Seed
             new() {TrainingGroup = group, User = await context.Users.FindAsync(2)},
             new() {TrainingGroup = group, User = await context.Users.FindAsync(3)}
         };
-        group.Students = trainees;
+        group!.Students = trainees;
 
         await context.SaveChangesAsync();
     }

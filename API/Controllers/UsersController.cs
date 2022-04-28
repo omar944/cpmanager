@@ -21,7 +21,7 @@ public class UsersController : BaseController
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var res = await _repository.GetUsersProfilesAsync();
-        return res;
+        return Ok(res);
     }
 
     [HttpGet("{username}")]

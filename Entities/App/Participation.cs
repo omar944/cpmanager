@@ -7,6 +7,6 @@ public class Participation : BaseEntity
     public string? Name { get; set; }
     public string? Location { get; set; }
     
-    public Team? Team { get; set; }
-    public User? User { get; set; }
+    public Team Team { get; set; }=null!;
+    public User User { get; set; }=null!;
 }
