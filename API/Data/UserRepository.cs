@@ -1,5 +1,5 @@
-﻿using API.DTOs;
-using API.Interfaces;
+﻿using API.Interfaces;
+using API.Models;
 using AutoMapper.QueryableExtensions;
 using Entities.App;
 
@@ -53,5 +53,15 @@ public class UserRepository : IUserRepository
     public async Task<bool> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<List<User>> GetUsersAsync(List<int> ids)
+    {
+        return await _users.Where(x => ids.Contains(x.Id)).ToListAsync();
+    }
+    
+    public IQueryable<User> GetQuery()
+    {
+        return _users.AsQueryable();
     }
 }

@@ -6,12 +6,16 @@ namespace API.Data;
 public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
 {
     private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
     private readonly DbSet<TEntity> _entities;
-    public Repository(AppDbContext context)
+    public Repository(AppDbContext context,IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
         _entities = _context.Set<TEntity>();
     }
+
+    public AppDbContext Context() => _context;
 
     public async Task<IEnumerable<TEntity>> GetAllAsync()
     {
@@ -23,7 +27,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         return _entities.AsQueryable();
     }
 
-    public async Task<TEntity?> GetAsync(int id)
+    public async Task<TEntity?> GetByIdAsync(int id)
     {
         return await _entities.SingleOrDefaultAsync(e => e.Id == id);
     }
@@ -36,6 +40,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     public void Remove(TEntity entity)
     {
         _entities.Remove(entity);
+    }
+
+    public void Update(TEntity entity)
+    {
+        _entities.Update(entity);
     }
 
     public async Task<bool> SaveChangesAsync()

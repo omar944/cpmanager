@@ -2,16 +2,20 @@
 using API.Interfaces;
 using Entities.App;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize]
 public abstract class BaseController : ControllerBase
 {
-    protected IUserRepository Users = null!;
+    protected readonly IUserRepository Users;
+
+    protected BaseController(IUserRepository users)
+    {
+        Users = users;
+    }
 
     protected async Task<User> GetUser()
     {

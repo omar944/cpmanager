@@ -1,4 +1,4 @@
-﻿using API.DTOs;
+﻿using API.Models;
 using CodeforcesTool.Models;
 using Entities.App;
 using Entities.Codeforces;

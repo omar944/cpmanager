@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class Test : BaseController
+public class Test:ControllerBase
 {
     private readonly CodeforcesApiService _apiService;
 

@@ -1,6 +1,6 @@
-﻿using API.DTOs;
-using Entities.App;
+﻿using Entities.App;
 using API.Interfaces;
+using API.Models;
 
 namespace API.Controllers;
 
