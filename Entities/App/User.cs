@@ -12,7 +12,7 @@ public class User : IdentityUser<int>
     public string? CodeChefHandle { get; set; }
     public string? University { get; set; }
     public string? Faculty { get; set; }
-    public string? ProfilePhoto { get; set; }
+    public string? ProfilePhoto { get; set; } // TODO: Change this to "UserPhoto" class
 
     public ICollection<Team>? Teams { get; set; }
     public ICollection<Participation>? Participations { get; set; }

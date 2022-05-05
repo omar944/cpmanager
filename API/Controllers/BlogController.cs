@@ -38,10 +38,11 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
     public override async Task<ActionResult> Create([FromBody] BlogCreateDto blogDto)
     {
         var user = await Users.GetUserByIdAsync(User.GetUserId());
+
         Blog blog = new Blog()
         {
             Content = blogDto.Content,
-            Photo = blogDto.Photo,
+            PhotoUrl = blogDto.PhotoUrl,
             Author = user
         };
         Repository.Add(blog);
@@ -52,6 +53,4 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
 
         return Created("", Mapper.Map<BlogDto>(blog));
     }
-    
-    
 }
