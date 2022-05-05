@@ -13,7 +13,7 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
     public TeamsController(IRepository<Team> repository, IMapper mapper, IUserRepository users) :
         base(repository, mapper, users)
     {
-        
+
     }
 
     [HttpGet("{username}")]

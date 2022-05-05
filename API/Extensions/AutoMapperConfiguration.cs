@@ -25,13 +25,14 @@ public class AutoMapperConfiguration : Profile
         CreateMap<RegisterDto, User>();
         CreateMap<User, UserDto>();
         CreateMap<Team, TeamDto>();
+        CreateMap<Blog, BlogDto>();
+        CreateMap<Blog, BlogCreateDto>();
         CreateMap<Participation, ParticipationDto>();
-        
+
         CreateMap<TrainingGroupUser, TrainingGroupDto>().IncludeMembers(u=>u.TrainingGroup);
         CreateMap<TrainingGroup, TrainingGroupDto>();
         CreateMap<TrainingGroupUser, string>().ConvertUsing(u => u.User.UserName);
-        
-        
+
         CreateMap<User, string>().ConvertUsing(u => u.UserName);
         CreateMap<CodeforcesAccount, string>().ConvertUsing(u => u.Handle ?? "");
 
