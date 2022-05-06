@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<User, Role, int
     public DbSet<TrainingGroup> TrainingGroups { get; set; } = null!;
     public DbSet<Participation> Participations { get; set; } = null!;
     public DbSet<DailyTask> DailyTasks { get; set; } = null!;
+    
     public DbSet<Blog> Blogs { get; set; } = null!;
 
     //codeforces
@@ -40,7 +41,6 @@ public class AppDbContext : IdentityDbContext<User, Role, int
             .HasForeignKey(u => u.RoleId)
             .IsRequired();
 
-        
         builder.Entity<User>()
             .HasOne(u => u.CodeforcesAccount)
             .WithOne(x => x.Owner)
@@ -62,7 +62,12 @@ public class AppDbContext : IdentityDbContext<User, Role, int
             .HasMany(u => u.TeachingGroups)
             .WithOne(u => u.Coach)
             .HasForeignKey(u => u.CoachId);
-
+        
+        //Blogs
+        builder.Entity<User>()
+            .HasMany(ub => ub.Blogs)
+            .WithOne(blog => blog.Author)
+            .HasForeignKey(b => b.AuthorId);
     }
 }
 

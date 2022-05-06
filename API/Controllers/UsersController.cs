@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.Extensions;
 using API.Interfaces;
 using API.Models;
 using AutoMapper.QueryableExtensions;
@@ -9,10 +10,12 @@ namespace API.Controllers;
 public class UsersController : BaseController
 {
     private readonly IMapper _mapper;
+    private readonly IPhotoService _photoService;
 
-    public UsersController(IUserRepository repository,IMapper mapper):base(repository)
+    public UsersController(IUserRepository repository,IMapper mapper, IPhotoService photoService):base(repository)
     {
         _mapper = mapper;
+        _photoService = photoService;
     }
 
     [HttpGet]
@@ -29,6 +32,28 @@ public class UsersController : BaseController
         if (user is null) return NotFound();
         return user;
     }
+
+    [HttpPost("add-photo")]
+    public async Task<ActionResult<User>> AddPhoto(IFormFile file)
+    {
+        var user = await Users.GetUserByIdAsync(User.GetUserId());
+        if (user is null) return BadRequest("User not found!");
+        
+        var imageUploadResult = await _photoService.AddPhotoAsync(file);
+
+        if (imageUploadResult.Error != null)
+            return BadRequest(imageUploadResult.Error.Message);
+
+        user.ProfilePhoto = imageUploadResult.SecureUrl.AbsoluteUri;
+
+        if (await Users.SaveChangesAsync())
+        {
+            return Created("", user);
+        }
+        return BadRequest("Problem adding photo");
+    }
+    
+    
     
     
 }

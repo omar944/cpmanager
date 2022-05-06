@@ -9,9 +9,14 @@ namespace API.Controllers;
 
 public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
 {
-    public BlogController(IRepository<Blog> repository, IMapper mapper, IUserRepository users)
+    private readonly IPhotoService _photoService;
+    //private readonly IRepository<BlogPhoto> PhotoRepository;
+    
+    public BlogController(IRepository<Blog> repository, IMapper mapper, IUserRepository users, 
+        IPhotoService photoService)
         : base(repository, mapper, users)
     {
+        _photoService = photoService;
     }
 
     [HttpGet("user-blogs")]
@@ -38,12 +43,23 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
     public override async Task<ActionResult> Create([FromBody] BlogCreateDto blogDto)
     {
         var user = await Users.GetUserByIdAsync(User.GetUserId());
+        
+        /*var stream = System.IO.File.OpenRead(blogDto.PhotoUrl!);
+        var imageFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(stream.Name));
+        var imageUploadResult = await _photoService.AddPhotoAsync(imageFile);
+        if (imageUploadResult.Error != null) return BadRequest(imageUploadResult.Error.Message);
 
-        Blog blog = new Blog()
+        var photo = new BlogPhoto()
+        {
+            Url = imageUploadResult.SecureUrl.AbsoluteUri,
+            PublicId = imageUploadResult.PublicId
+        };*/
+        var blog = new Blog
         {
             Content = blogDto.Content,
-            PhotoUrl = blogDto.PhotoUrl,
-            Author = user
+            Photo = blogDto.Photo,
+            Author = user,
+            AuthorId = user.Id
         };
         Repository.Add(blog);
         if (!(await Repository.SaveChangesAsync()))
