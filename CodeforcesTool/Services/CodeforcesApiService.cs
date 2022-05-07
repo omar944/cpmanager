@@ -14,12 +14,12 @@ public class CodeforcesApiService
         _options = new JsonSerializerOptions {PropertyNameCaseInsensitive = true};
     }
 
-    public async Task<CodeforcesUserDto?> GetUserAsync(string username)
+    public async Task<CodeforcesAccountDto?> GetUserAsync(string username)
     {
         try
         {
             var res = await _httpClient
-                .GetFromJsonAsync<CodeforcesApiResult<List<CodeforcesUserDto>>>
+                .GetFromJsonAsync<CodeforcesApiResult<List<CodeforcesAccountDto>>>
                     ($"user.info?handles={username}", _options);
             return res?.Result?.FirstOrDefault();
         }

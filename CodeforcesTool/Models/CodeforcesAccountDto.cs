@@ -1,6 +1,6 @@
 ﻿namespace CodeforcesTool.Models;
 
-public class CodeforcesUserDto
+public class CodeforcesAccountDto
 {
     public string? Handle { get; set; }
     

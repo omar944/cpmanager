@@ -1,6 +1,6 @@
 ﻿namespace API.Models;
 
-public class TrainingGroupDto
+public class TrainingGroupDto : BaseDto
 {
     public string? Name { get; set; }
     public string? Coach { get; set; }
