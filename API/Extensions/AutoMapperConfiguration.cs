@@ -27,12 +27,10 @@ public class AutoMapperConfiguration : Profile
         CreateMap<Team, TeamDto>();
         
         CreateMap<Blog, BlogDto>();//.ForMember(dto => dto.PhotoUrl, 
-            //options => options.MapFrom(blog => blog.Photo!.Url) );;
+        //     //options => options.MapFrom(blog => blog.Photo!.Url) );;
 
-        CreateMap<Blog, BlogCreateDto>();
-            //.ForMember(dto => dto.PhotoUrl, 
-              //  options => options.MapFrom(blog => blog.Photo!.Url) );
-        
+        // CreateMap<Blog, BlogCreateDto>();
+
         CreateMap<Participation, ParticipationDto>();
 
         CreateMap<TrainingGroupUser, TrainingGroupDto>().IncludeMembers(u=>u.TrainingGroup);
