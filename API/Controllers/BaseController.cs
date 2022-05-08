@@ -7,7 +7,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize]
+[Authorize]
 public abstract class BaseController : ControllerBase
 {
     protected readonly IUserRepository Users;
@@ -17,6 +17,8 @@ public abstract class BaseController : ControllerBase
         Users = users;
     }
 
+    [ApiExplorerSettings(IgnoreApi = true)]
+    
     protected async Task<User> GetUser()
     {
         var user = await Users.GetUserByIdAsync(User.GetUserId());

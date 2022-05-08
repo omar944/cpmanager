@@ -1,9 +1,9 @@
-﻿using API.Data;
 using API.Extensions;
 using API.Interfaces;
 using API.Models;
-using AutoMapper.QueryableExtensions;
+using CodeforcesTool.Services;
 using Entities.App;
+using Entities.Codeforces;
 
 namespace API.Controllers;
 
@@ -11,10 +11,14 @@ public class UsersController : BaseController
 {
     private readonly IMapper _mapper;
     private readonly IPhotoService _photoService;
+    private readonly CodeforcesApiService _codeforcesService;
 
-    public UsersController(IUserRepository repository,IMapper mapper, IPhotoService photoService):base(repository)
+    public UsersController(IUserRepository repository, IMapper mapper, CodeforcesApiService codeforcesService,
+        IPhotoService photoService) :
+        base(repository)
     {
         _mapper = mapper;
+        _codeforcesService = codeforcesService;
         _photoService = photoService;
     }
 
@@ -32,13 +36,12 @@ public class UsersController : BaseController
         if (user is null) return NotFound();
         return user;
     }
-
+    
     [HttpPost("add-photo")]
     public async Task<ActionResult<User>> AddPhoto(IFormFile file)
     {
-        var user = await Users.GetUserByIdAsync(User.GetUserId());
-        if (user is null) return BadRequest("User not found!");
-        
+        var user = await GetUser();
+
         var imageUploadResult = await _photoService.AddPhotoAsync(file);
 
         if (imageUploadResult.Error != null)
@@ -53,7 +56,17 @@ public class UsersController : BaseController
         return BadRequest("Problem adding photo");
     }
     
-    
-    
-    
+    [HttpPost("codeforces-account")]
+    public async Task<IActionResult> AddCodeforcesAccount([FromBody]string handle)
+    {
+        var account = await _codeforcesService.GetUserAsync(handle);
+        if(account is null)return NotFound(new{message="no such handle"});
+        
+        var user = await GetUser();
+        user.CodeforcesAccount = _mapper.Map<CodeforcesAccount>(account);
+        
+        if (await Users.SaveChangesAsync() == false) return BadRequest();
+        
+        return Ok();
+    }
 }
