@@ -21,7 +21,8 @@ public abstract class CrudController<TInputDto, TOutputDto, TEntity> : BaseContr
     [HttpGet]
     public virtual async Task<ActionResult<IEnumerable<TOutputDto>>> GetAll()
     {
-        return await Repository.GetQuery().ProjectTo<TOutputDto>(Mapper.ConfigurationProvider).ToListAsync();
+        var result = await Repository.GetProjected<TOutputDto>();
+        return Ok(result);
     }
 
     [HttpPost]
@@ -31,14 +32,13 @@ public abstract class CrudController<TInputDto, TOutputDto, TEntity> : BaseContr
         Repository.Add(entity);
         if (await Repository.SaveChangesAsync() == false)
             return BadRequest(new {message = "error creating resource"});
-        return Created("", Mapper.Map<TOutputDto>(Repository.GetByIdAsync(entity.Id)));
+        return Created("", Mapper.Map<TOutputDto>(await Repository.GetProjectedById<TOutputDto>(entity.Id)));
     }
 
     [HttpGet("{id:int}")]
     public virtual async Task<ActionResult<TOutputDto>> GetById(int id)
     {
-        var result = await Repository.GetQuery().ProjectTo<TOutputDto>(Mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var result = await Repository.GetProjectedById<TOutputDto>(id);
         if (result == null) return NotFound();
         return Mapper.Map<TOutputDto>(result);
     }
@@ -58,10 +58,10 @@ public abstract class CrudController<TInputDto, TOutputDto, TEntity> : BaseContr
     {
         var entity = await Repository.GetByIdAsync(id);
         if (entity is null) return NotFound();
-        entity = Mapper.Map<TEntity>(dto);
+        entity = Mapper.Map(dto,entity);
         Repository.Update(entity);
         if (await Repository.SaveChangesAsync() == false) return BadRequest(new {message = "error updating"});
-        return Ok(Mapper.Map<TOutputDto>(entity));
+        return Ok(Repository.GetProjectedById<TOutputDto>(id));
     }
 
 }

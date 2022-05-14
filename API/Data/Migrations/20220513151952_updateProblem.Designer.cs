@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,27 +11,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220513151952_updateProblem")]
+    partial class updateProblem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.4");
-
-            modelBuilder.Entity("DailyTaskProblem", b =>
-                {
-                    b.Property<int>("ProblemsId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TasksId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ProblemsId", "TasksId");
-
-                    b.HasIndex("TasksId");
-
-                    b.ToTable("DailyTaskProblem");
-                });
 
             modelBuilder.Entity("Entities.App.Blog", b =>
                 {
@@ -389,6 +376,9 @@ namespace API.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("DailyTaskId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Index")
                         .HasColumnType("TEXT");
 
@@ -400,6 +390,8 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DailyTaskId");
+
                     b.ToTable("Problems");
                 });
 
@@ -409,23 +401,26 @@ namespace API.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ProblemId")
+                    b.Property<int?>("ProblemId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ProgrammingLanguage")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Verdict")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProblemId");
+                    b.HasIndex("AuthorId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ProblemId");
 
                     b.ToTable("Submissions");
                 });
@@ -561,21 +556,6 @@ namespace API.Data.Migrations
                     b.ToTable("TeamUser");
                 });
 
-            modelBuilder.Entity("DailyTaskProblem", b =>
-                {
-                    b.HasOne("Entities.Codeforces.Problem", null)
-                        .WithMany()
-                        .HasForeignKey("ProblemsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Entities.App.DailyTask", null)
-                        .WithMany()
-                        .HasForeignKey("TasksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Entities.App.Blog", b =>
                 {
                     b.HasOne("Entities.App.User", "Author")
@@ -675,19 +655,22 @@ namespace API.Data.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Entities.Codeforces.Problem", b =>
+                {
+                    b.HasOne("Entities.App.DailyTask", null)
+                        .WithMany("Problems")
+                        .HasForeignKey("DailyTaskId");
+                });
+
             modelBuilder.Entity("Entities.Codeforces.Submission", b =>
                 {
-                    b.HasOne("Entities.Codeforces.Problem", "Problem")
-                        .WithMany("Submissions")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.App.User", "Author")
-                        .WithMany("Submissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("AuthorId");
+
+                    b.HasOne("Entities.Codeforces.Problem", "Problem")
+                        .WithMany()
+                        .HasForeignKey("ProblemId");
 
                     b.Navigation("Author");
 
@@ -760,6 +743,11 @@ namespace API.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Entities.App.DailyTask", b =>
+                {
+                    b.Navigation("Problems");
+                });
+
             modelBuilder.Entity("Entities.App.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -778,18 +766,11 @@ namespace API.Data.Migrations
 
                     b.Navigation("Participations");
 
-                    b.Navigation("Submissions");
-
                     b.Navigation("TeachingGroups");
 
                     b.Navigation("TrainingGroups");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("Entities.Codeforces.Problem", b =>
-                {
-                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

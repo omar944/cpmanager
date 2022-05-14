@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220513154243_updateTask")]
+    partial class updateTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.4");
@@ -409,23 +411,26 @@ namespace API.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ProblemId")
+                    b.Property<int?>("ProblemId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ProgrammingLanguage")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Verdict")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProblemId");
+                    b.HasIndex("AuthorId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ProblemId");
 
                     b.ToTable("Submissions");
                 });
@@ -677,17 +682,13 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("Entities.Codeforces.Submission", b =>
                 {
-                    b.HasOne("Entities.Codeforces.Problem", "Problem")
-                        .WithMany("Submissions")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.App.User", "Author")
-                        .WithMany("Submissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("AuthorId");
+
+                    b.HasOne("Entities.Codeforces.Problem", "Problem")
+                        .WithMany()
+                        .HasForeignKey("ProblemId");
 
                     b.Navigation("Author");
 
@@ -778,18 +779,11 @@ namespace API.Data.Migrations
 
                     b.Navigation("Participations");
 
-                    b.Navigation("Submissions");
-
                     b.Navigation("TeachingGroups");
 
                     b.Navigation("TrainingGroups");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("Entities.Codeforces.Problem", b =>
-                {
-                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

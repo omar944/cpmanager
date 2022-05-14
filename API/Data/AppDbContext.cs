@@ -24,7 +24,8 @@ public class AppDbContext : IdentityDbContext<User, Role, int
     public DbSet<Problem> Problems { get; set; } = null!;
     public DbSet<Submission> Submissions { get; set; } = null!;
     public DbSet<CodeforcesAccount> CodeforceseAccounts { get; set; } = null!;
-
+    public DbSet<Tag> Tags { get; set; } = null!;
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -68,6 +69,17 @@ public class AppDbContext : IdentityDbContext<User, Role, int
             .HasMany(ub => ub.Blogs)
             .WithOne(blog => blog.Author)
             .HasForeignKey(b => b.AuthorId);
+
+
+        builder.Entity<User>()
+            .HasMany(u => u.Submissions)
+            .WithOne(s => s.Author)
+            .HasForeignKey(s => s.UserId);
+
+        builder.Entity<Problem>()
+            .HasMany(p => p.Submissions)
+            .WithOne(s => s.Problem)
+            .HasForeignKey(s => s.ProblemId);
     }
 }
 

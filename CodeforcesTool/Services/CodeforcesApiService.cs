@@ -30,10 +30,10 @@ public class CodeforcesApiService
         }
     }
 
-    public async Task<List<ProblemDto>?> GetAllProblems()
+    public async Task<List<ProblemFromApiDto>?> GetAllProblems()
     {
         var res = await _httpClient.GetFromJsonAsync<CodeforcesApiResult<ProblemsDto>>
-            ($"problemset.problems", _options);
+            ("problemset.problems?tags=interactive", _options);
         return res?.Result?.Problems;
     }
 

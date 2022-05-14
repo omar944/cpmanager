@@ -35,6 +35,7 @@ public static class Seed
             new() {UserName = "omar",CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)},
             new() {UserName = "ahmad"},
             new() {UserName = "ali"},
+            new() {UserName = "yahya"},
         };
         
         foreach (var user in users)
@@ -79,10 +80,67 @@ public static class Seed
         var trainees = new List<TrainingGroupUser>
         {
             new() {TrainingGroup = group, User = await context.Users.FindAsync(2)},
-            new() {TrainingGroup = group, User = await context.Users.FindAsync(3)}
+            new() {TrainingGroup = group, User = await context.Users.FindAsync(3)},
+            new() {TrainingGroup = group, User = await context.Users.FindAsync(1)}
         };
         group!.Students = trainees;
 
+        var problems = await apiService.GetAllProblems();
+        foreach (var dto in problems)
+        {
+            foreach (var tag in dto.Tags)
+            {
+                if (await context.Tags.FirstOrDefaultAsync(t => t.Name == tag) == null)
+                {
+                    context.Tags.Add(new Tag {Name = tag});
+                }
+            }
+            await context.SaveChangesAsync();
+            
+            context.Problems.Add(new Problem
+            {
+                Name=dto.Name,
+                ContestId=dto.ContestId,
+                Index=dto.Index,
+                Rating=dto.Rating,
+                Tags = await context.Tags.Where(t=>dto.Tags.Contains(t.Name)).ToListAsync()
+            });
+        }
+
+        var submissions = await apiService.GetSubmissionsAsync("omar94",200);
+        foreach (var dto in submissions)
+        {
+            if (dto.Verdict != "OK") continue;
+            
+            var propblemDto = dto.Problem;
+            if (await context.Problems.Where(x => x.Name == propblemDto.Name).AnyAsync() == false)
+            {
+                foreach (var tag in propblemDto.Tags)
+                {
+                    if (await context.Tags.FirstOrDefaultAsync(t => t.Name == tag) == null)
+                    {
+                        context.Tags.Add(new Tag {Name = tag});
+                    }
+                }
+
+                await context.SaveChangesAsync();
+                context.Problems.Add(new Problem
+                {
+                    Name = propblemDto.Name,
+                    ContestId = propblemDto.ContestId,
+                    Index = propblemDto.Index,
+                    Rating = propblemDto.Rating,
+                    Tags = await context.Tags.Where(t => propblemDto.Tags.Contains(t.Name)).ToListAsync()
+                });
+            }
+            await context.SaveChangesAsync();
+            context.Submissions.Add(new Submission
+            {
+                Author=await context.Users.FindAsync(1),
+                Problem=await context.Problems.Where(x=>x.Name==propblemDto.Name).FirstOrDefaultAsync(),
+                Verdict="OK"
+            });
+        }
         await context.SaveChangesAsync();
     }
 }

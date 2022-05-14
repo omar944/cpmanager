@@ -2,7 +2,7 @@
 
 public class SubmissionDto
 {
-    public ProblemDto? Problem { get; set; }
+    public ProblemFromApiDto? Problem { get; set; }
     public Author? Author { get; set; }
     public string? ProgrammingLanguage { get; set; }
     public string? Verdict { get; set; }

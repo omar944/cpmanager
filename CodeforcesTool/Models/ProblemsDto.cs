@@ -2,5 +2,5 @@
 
 public class ProblemsDto
 {
-    public List<ProblemDto>? Problems { get; set; }
+    public List<ProblemFromApiDto>? Problems { get; set; }
 }

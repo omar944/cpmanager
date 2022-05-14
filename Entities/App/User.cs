@@ -22,4 +22,7 @@ public class User : IdentityUser<int>
     public ICollection<Blog>? Blogs { get; set; }
 
     public ICollection<UserRole> UserRoles { get; set; } = null!;
+
+    public ICollection<Submission>? Submissions { get; set; }
+    
 }
