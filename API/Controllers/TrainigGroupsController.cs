@@ -1,4 +1,5 @@
-﻿using API.Interfaces;
+﻿using API.Data;
+using API.Interfaces;
 using API.Models;
 using AutoMapper.QueryableExtensions;
 using Entities.App;
@@ -11,7 +12,8 @@ public class TrainigGroupsController:CrudController<TrainingGroupCreateDto,Train
         base(repository, mapper, users)
     {
     }
-
+    
+    
     [HttpPost]
     public override async Task<ActionResult> Create([FromBody] TrainingGroupCreateDto dto)
     {
@@ -44,7 +46,6 @@ public class TrainigGroupsController:CrudController<TrainingGroupCreateDto,Train
         if (group is null) return NotFound();
         
         var currentStudents = group.Students?.Select(x=>x.UserId).ToList();
-        Console.WriteLine(currentStudents);
         currentStudents?.AddRange(dto.Students!);
         currentStudents = currentStudents?.Distinct().ToList();
         
@@ -60,25 +61,16 @@ public class TrainigGroupsController:CrudController<TrainingGroupCreateDto,Train
             .FirstOrDefaultAsync(x => x.Id == id));
     }
     
-    [HttpDelete("{id:int}/students")]
-    public async Task<ActionResult> DeleteMembers(int id,[FromBody]TrainingGroupCreateDto dto)
+    [HttpDelete("{id:int}/students/{studentId:int}")]
+    public async Task<ActionResult> DeleteMembers(int id,int studentId)
     {
         var group = await Repository.GetQuery().Include(x => x.Students).FirstOrDefaultAsync(x=>x.Id==id);
         if (group is null) return NotFound();
+
+        var currentStudent = group.Students?.Where(x => x.UserId == studentId).SingleOrDefault();
+        if (currentStudent is null) return NotFound();
+        group.Students?.Remove(currentStudent);
         
-        var currentStudents = group.Students?.Select(x=>x.UserId).ToList();
-        var students = dto.Students!.Intersect(currentStudents!).ToList();
-        
-        foreach (var student in students)
-        {
-            currentStudents?.Remove(student);
-        }
-        var newStudents = await Users.GetUsersAsync(currentStudents!);
-        group.Students = newStudents.Select(st => new TrainingGroupUser
-        {
-            TrainingGroup=group,
-            User=st
-        }).ToList();
         Repository.Update(group);
         if (await Repository.SaveChangesAsync() == false) return BadRequest(new {message = "error updating"});
         return Ok(await Repository.GetQuery().ProjectTo<TrainingGroupDto>(Mapper.ConfigurationProvider)

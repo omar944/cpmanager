@@ -1,3 +1,4 @@
+using System.Text.Json;
 using API.Extensions;
 using API.Interfaces;
 using API.Models;
@@ -56,17 +57,17 @@ public class UsersController : BaseController
         return BadRequest("Problem adding photo");
     }
     
-    [HttpPost("codeforces-account")]
-    public async Task<IActionResult> AddCodeforcesAccount([FromBody]string handle)
+    [HttpPost("codeforces-account/{handle}")]
+    public async Task<IActionResult> AddCodeforcesAccount(string handle)
     {
         var account = await _codeforcesService.GetUserAsync(handle);
-        if(account is null)return NotFound(new{message="no such handle"});
-        
+        if (account is null) return NotFound(new {message = "no such handle"});
+
         var user = await GetUser();
         user.CodeforcesAccount = _mapper.Map<CodeforcesAccount>(account);
-        
+
         if (await Users.SaveChangesAsync() == false) return BadRequest();
-        
+
         return Ok();
     }
 }

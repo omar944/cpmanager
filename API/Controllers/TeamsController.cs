@@ -39,9 +39,9 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         };
         Repository.Add(team);
         if (await Repository.SaveChangesAsync() == false)
-            return BadRequest(new {message = "error creating resource 23"});
+            return BadRequest(new {message = "error creating resource"});
 
-        return Created("", Mapper.Map<TeamDto>(await Repository.GetByIdAsync(team.Id)));
+        return Created("",await Repository.GetProjectedById<TeamDto>(team.Id));
     }
     
     [HttpPut("{id:int}")]
@@ -56,8 +56,7 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         team.Name = dto.Name;
         Repository.Update(team);
         if (await Repository.SaveChangesAsync() == false) return BadRequest(new {message = "error updating"});
-        var res = await Repository.GetQuery().ProjectTo<TeamDto>(Mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var res =  await Repository.GetProjectedById<TeamDto>(team.Id);
         return Ok(res);
     }
     
