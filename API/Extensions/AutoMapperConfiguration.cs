@@ -15,6 +15,7 @@ public class AutoMapperConfiguration : Profile
         
         CreateMap<RegisterDto, User>();
         CreateMap<User, UserDto>();
+        CreateMap<User, UserBlogDto>();
         CreateMap<Team, TeamDto>();
         
         CreateMap<Blog, BlogDto>();

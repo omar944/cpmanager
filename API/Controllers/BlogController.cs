@@ -30,14 +30,14 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
 
         return await query.ToListAsync();
     }
-    
+
     [AllowAnonymous]
     [HttpGet("user-blogs/{username}")]
     public async Task<ActionResult<IEnumerable<BlogDto>>> GetUserBlogs(string username)
     {
         User? user = await Users.GetUserByUsernameAsync(username);
         if (user is null) return NotFound("User not found!");
-        
+
         var query = Repository.GetQuery()
             .Where(blog => blog.Author.UserName == username).ProjectTo<BlogDto>(Mapper.ConfigurationProvider);
 
