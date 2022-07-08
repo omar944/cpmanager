@@ -22,6 +22,6 @@ public abstract class BaseController : ControllerBase
     protected async Task<User> GetUser()
     {
         var user = await Users.GetUserByIdAsync(User.GetUserId());
-        return user;
+        return user!;
     }
 }

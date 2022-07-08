@@ -2,6 +2,7 @@
 using API.Data;
 using API.Helpers;
 using API.Interfaces;
+using API.RecommendationServices;
 using API.Services;
 using CodeforcesTool.Services;
 
@@ -11,6 +12,8 @@ public static class AppServiceExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services,IConfiguration config)
     {
+        services.AddControllers().AddJsonOptions(options =>
+            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
         services.AddScoped<IPhotoService, PhotoService>();
@@ -23,6 +26,8 @@ public static class AppServiceExtensions
 
         services.AddScoped(typeof(IRepository<>),typeof(Repository<>));
 
+        services.AddScoped<IRecommendationService, RecommendationService>();
+        
         services.AddDbContext<AppDbContext>(options =>
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -40,7 +45,7 @@ public static class AppServiceExtensions
             {
                 // Use connection string provided at runtime by Heroku.
                 var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
+                if (connUrl is null) throw new Exception("connUrl is null");
                 // Parse connection URL to connection string for Npgsql
                 connUrl = connUrl.Replace("postgres://", string.Empty);
                 var pgUserPass = connUrl.Split("@")[0];
@@ -63,9 +68,6 @@ public static class AppServiceExtensions
 
 
         services.AddHttpClient<CodeforcesApiService>();
-
-        services.AddMvc().AddJsonOptions(options =>
-            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault);
 
         return services;
     }

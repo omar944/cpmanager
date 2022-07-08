@@ -3,6 +3,6 @@
 public class TrainingGroupDto : BaseDto
 {
     public string? Name { get; set; }
-    public string? Coach { get; set; }
-    public List<string>? Students { get; set; }
+    public int Coach { get; set; }
+    public List<int>? Students { get; set; }
 }

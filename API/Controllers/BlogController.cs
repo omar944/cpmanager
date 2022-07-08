@@ -48,13 +48,17 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
     [HttpPost, Authorize]
     public override async Task<ActionResult> Create([FromForm] BlogCreateDto blogDto)
     {
-        var user = await Users.GetUserByIdAsync(User.GetUserId());
+        var user = await GetUser();
         var imageUploadResult = await _photoService.AddPhotoAsync(blogDto.Image!);
 
+        if (imageUploadResult.Error != null)
+        {
+            return BadRequest(imageUploadResult.Error.Message);
+        }
         var blog = new Blog
         {
             Content = blogDto.Content,
-            Photo = imageUploadResult.Error != null ? "" : imageUploadResult.SecureUrl.AbsoluteUri,
+            Photo = imageUploadResult.SecureUrl.AbsoluteUri,
             Author = user,
             AuthorId = user.Id,
             CreatedAt = DateTime.UtcNow
@@ -69,7 +73,7 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
         return Created("", Mapper.Map<BlogDto>(blog));
     }
 
-    [HttpPost("add-photo/{blogId}"), Authorize]
+    [HttpPost("add-photo/{blogId:int}"), Authorize]
     public async Task<ActionResult<BlogDto>> AddPhoto(IFormFile file, int blogId)
     {
         var blog = await Repository.GetByIdAsync(blogId);
@@ -91,8 +95,8 @@ public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
     [HttpPut("update/{id:int}"), Authorize]
     public async Task<ActionResult> UpdateBlog([FromQuery] int id, [FromForm] BlogUpdateDto dto)
     {
-        int currentUserId = User.GetUserId();
-        Blog? blog = await Repository.GetByIdAsync(id);
+        var currentUserId = User.GetUserId();
+        var blog = await Repository.GetByIdAsync(id);
         
         if (blog is null) return NotFound("Blog not found!");
         if (blog.AuthorId != currentUserId) return BadRequest("You can only edit your own blogs.");

@@ -1,4 +1,6 @@
-﻿namespace API.Models;
+﻿using Entities.App;
+
+namespace API.Models;
 
 public class UserDto
 {
@@ -17,4 +19,6 @@ public class UserDto
     public ICollection<ParticipationDto>? Participations { get; set; }
     public ICollection<TrainingGroupDto>? TrainingGroups { get; set; }
     public ICollection<TrainingGroupDto>? TeachingGroups { get; set; }
+    // public ICollection<string>? UserRoles { get; set; }
+    public bool IsCoach { get; set; }
 }

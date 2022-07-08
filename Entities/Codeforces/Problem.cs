@@ -13,7 +13,7 @@ public class Problem : BaseEntity
     public ICollection<DailyTask>? Tasks  { get; set; }
     public ICollection<Submission>? Submissions { get; set; }
     
-    public string GetLink()
+    public string GetUrl()
     {
         return $"https://codeforces.com/contest/{ContestId}/problem/{Index}";
     }

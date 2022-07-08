@@ -35,7 +35,7 @@ public class AppDbContext : IdentityDbContext<User, Role, int
             .WithOne(u => u.User)
             .HasForeignKey(u => u.UserId)
             .IsRequired();
-
+        
         builder.Entity<Role>()
             .HasMany(ur => ur.UserRoles)
             .WithOne(u => u.Role)
@@ -79,7 +79,10 @@ public class AppDbContext : IdentityDbContext<User, Role, int
         builder.Entity<Problem>()
             .HasMany(p => p.Submissions)
             .WithOne(s => s.Problem)
-            .HasForeignKey(s => s.ProblemId);
+            .HasForeignKey(s => new {s.ProblemContestId, s.ProblemIndex});
+
+        builder.Entity<Problem>()
+            .HasKey(p => new {p.ContestId, p.Index});
     }
 }
 

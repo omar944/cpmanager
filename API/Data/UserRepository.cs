@@ -9,12 +9,14 @@ public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly UserManager<User> _userManager;
 
     private readonly DbSet<User> _users;
-    public UserRepository(AppDbContext context,IMapper mapper)
+    public UserRepository(AppDbContext context,IMapper mapper,UserManager<User> userManager)
     {
         _context = context;
         _mapper = mapper;
+        _userManager = userManager;
         _users = context.Set<User>();
     }
 
@@ -23,10 +25,10 @@ public class UserRepository : IUserRepository
         _users.Update(user);
     }
 
-    public async Task<User> GetUserByIdAsync(int id)
+    public async Task<User?> GetUserByIdAsync(int id)
     {
         var ret = await _users.FindAsync(id);
-        return ret!;
+        return ret;
     }
 
     public async Task<User?> GetUserByUsernameAsync(string username)
@@ -36,7 +38,9 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<UserDto>> GetUsersProfilesAsync()
     {
-        return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
+        return await _userManager.Users.Include(x=>x.UserRoles).ThenInclude(r=>r.Role).AsNoTracking()
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
+        //return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
     public async Task<IEnumerable<User>> GetUsersAsync()
@@ -44,10 +48,11 @@ public class UserRepository : IUserRepository
         return await _users.ToListAsync();
     }
 
-    public async Task<UserDto?> GetUserProfileAsync(string username, bool? owner=false)
+    public async Task<UserDto?> GetUserProfileAsync(int id, bool? owner=false)
     {
-        return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-            .SingleOrDefaultAsync(x => x.UserName == username);
+        return await _users.Include(x=>x.UserRoles).ThenInclude(r=>r.Role).AsNoTracking()
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<bool> SaveChangesAsync()

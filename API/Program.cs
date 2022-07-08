@@ -6,11 +6,6 @@ using Entities.App;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddIdentityServices(builder.Configuration);
@@ -47,6 +42,8 @@ try
     var mapper=services.GetRequiredService<IMapper>();
     await context.Database.MigrateAsync();
     await Seed.SeedUsers(userManager, roleManager,dbContext,apiService,mapper);
+    await Seed.SeedProblems(dbContext,apiService);
+    await Seed.SeedSubmissions(dbContext,apiService);
 }
 catch (Exception e)
 {

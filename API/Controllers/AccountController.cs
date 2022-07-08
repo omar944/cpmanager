@@ -25,19 +25,23 @@ public class AccountController:ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<LoginResultDto>> Register([FromBody]RegisterDto dto)
     {
-        if (await CheckUser(dto.UserName)) return BadRequest(new {error = "existing username"});
-
+        if (await CheckEmail(dto.Email)) return BadRequest(new {error = "existing email"});
+        dto.Email = dto.Email?.ToLower();
         var user = _mapper.Map<User>(dto);
-        user.UserName = dto.UserName?.ToLower();
+        user.UserName = dto.Email;
         var res = await _userManager.CreateAsync(user, dto.Password);
         if (!res.Succeeded) return BadRequest(res.Errors);
 
-        var role = await _userManager.AddToRoleAsync(user, "Member");
-        if (!role.Succeeded) return BadRequest(role.Errors);
+        var roles = new List<string> {"Member"};
+        if (dto.Status == "coach")
+            roles.Add("Coach");
         
+        var role = await _userManager.AddToRolesAsync(user, roles);
+        if (!role.Succeeded) return BadRequest(role.Errors);
+
         return new LoginResultDto
         {
-            Username = user.UserName,
+            Email = user.Email,
             Token = await _tokenService.CreateToken(user),
         };
     }
@@ -45,27 +49,26 @@ public class AccountController:ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResultDto>> Login([FromBody]LoginDto dto)
     {
-        if (dto.Username is null)
+        if (dto.Email is null)
         {
             return BadRequest();
         }
         var user = await _userManager.Users
-            .SingleOrDefaultAsync(x => x.UserName == dto.Username.ToLower());
+            .SingleOrDefaultAsync(x => x.Email == dto.Email.ToLower());
         
         if (user == null) return Unauthorized("invalid username");
         var res = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-        if (!res.Succeeded) return Unauthorized();
+        if (res.Succeeded == false) return Unauthorized();
         
         return new LoginResultDto
         {
-            Username = user.UserName,
+            Email = user.Email,
             Token = await _tokenService.CreateToken(user),
         };
     }
 
-    private async Task<bool> CheckUser(string? username)
+    private async Task<bool> CheckEmail(string? email)
     {
-        if (username is null) return false;
-        return await _userManager.Users.AnyAsync(x => x.UserName == username.ToLower());
+        return await _userManager.Users.AnyAsync(x => x.Email == email);
     }
 }

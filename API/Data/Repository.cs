@@ -10,31 +10,27 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     private readonly AppDbContext _context;
     private readonly IMapper _mapper;
     private readonly DbSet<TEntity> _entities;
-    public Repository(AppDbContext context,IMapper mapper)
+
+    public Repository(AppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
         _entities = _context.Set<TEntity>();
     }
 
-    public AppDbContext Context() => _context;
-
     public async Task<IEnumerable<TEntity>> GetAllAsync()
-    {
-        return await _entities.ToListAsync();
-    }
+        => await _entities.ToListAsync();
+    
 
     public IQueryable<TEntity> GetQuery()
-    {
-        return _entities.AsQueryable();
-    }
+        => _entities.AsQueryable();
 
     public async Task<TEntity?> GetByIdAsync(int id)
     {
         return await _entities.SingleOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<IEnumerable<TDto>> GetProjected<TDto>()where TDto:BaseDto
+    public async Task<IEnumerable<TDto>> GetProjected<TDto>() where TDto : BaseDto
     {
         return await _entities.ProjectTo<TDto>(_mapper.ConfigurationProvider).ToListAsync();
     }

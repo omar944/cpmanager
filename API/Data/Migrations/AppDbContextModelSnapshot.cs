@@ -24,15 +24,18 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("DailyTaskProblem", b =>
                 {
-                    b.Property<int>("ProblemsId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("TasksId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ProblemsId", "TasksId");
+                    b.Property<int>("ProblemsContestId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("TasksId");
+                    b.Property<string>("ProblemsIndex")
+                        .HasColumnType("text");
+
+                    b.HasKey("TasksId", "ProblemsContestId", "ProblemsIndex");
+
+                    b.HasIndex("ProblemsContestId", "ProblemsIndex");
 
                     b.ToTable("DailyTaskProblem");
                 });
@@ -261,6 +264,12 @@ namespace API.Data.Migrations
                     b.Property<string>("Faculty")
                         .HasColumnType("text");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("LastActive")
                         .HasColumnType("timestamp with time zone");
 
@@ -402,20 +411,17 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("Entities.Codeforces.Problem", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<int>("ContestId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Index")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Index")
-                        .HasColumnType("text");
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -423,7 +429,7 @@ namespace API.Data.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("ContestId", "Index");
 
                     b.ToTable("Problems");
                 });
@@ -439,8 +445,11 @@ namespace API.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ProblemId")
+                    b.Property<int>("ProblemContestId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ProblemIndex")
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -450,9 +459,9 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProblemId");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ProblemContestId", "ProblemIndex");
 
                     b.ToTable("Submissions");
                 });
@@ -566,15 +575,18 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("ProblemTag", b =>
                 {
-                    b.Property<int>("ProblemsId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("TagsId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ProblemsId", "TagsId");
+                    b.Property<int>("ProblemsContestId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("TagsId");
+                    b.Property<string>("ProblemsIndex")
+                        .HasColumnType("text");
+
+                    b.HasKey("TagsId", "ProblemsContestId", "ProblemsIndex");
+
+                    b.HasIndex("ProblemsContestId", "ProblemsIndex");
 
                     b.ToTable("ProblemTag");
                 });
@@ -596,15 +608,15 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("DailyTaskProblem", b =>
                 {
-                    b.HasOne("Entities.Codeforces.Problem", null)
-                        .WithMany()
-                        .HasForeignKey("ProblemsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.App.DailyTask", null)
                         .WithMany()
                         .HasForeignKey("TasksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Codeforces.Problem", null)
+                        .WithMany()
+                        .HasForeignKey("ProblemsContestId", "ProblemsIndex")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -710,17 +722,15 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("Entities.Codeforces.Submission", b =>
                 {
-                    b.HasOne("Entities.Codeforces.Problem", "Problem")
-                        .WithMany("Submissions")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.App.User", "Author")
                         .WithMany("Submissions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Entities.Codeforces.Problem", "Problem")
+                        .WithMany("Submissions")
+                        .HasForeignKey("ProblemContestId", "ProblemIndex");
 
                     b.Navigation("Author");
 
@@ -765,15 +775,15 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("ProblemTag", b =>
                 {
-                    b.HasOne("Entities.Codeforces.Problem", null)
-                        .WithMany()
-                        .HasForeignKey("ProblemsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Entities.Codeforces.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Codeforces.Problem", null)
+                        .WithMany()
+                        .HasForeignKey("ProblemsContestId", "ProblemsIndex")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

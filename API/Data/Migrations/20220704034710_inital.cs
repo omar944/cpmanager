@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace API.Data.Migrations
 {
-    public partial class initial : Migration
+    public partial class inital : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -37,7 +37,9 @@ namespace API.Data.Migrations
                     CodeChefHandle = table.Column<string>(type: "text", nullable: true),
                     University = table.Column<string>(type: "text", nullable: true),
                     Faculty = table.Column<string>(type: "text", nullable: true),
+                    FullName = table.Column<string>(type: "text", nullable: true),
                     ProfilePhoto = table.Column<string>(type: "text", nullable: true),
+                    Gender = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -62,17 +64,16 @@ namespace API.Data.Migrations
                 name: "Problems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ContestId = table.Column<int>(type: "integer", nullable: false),
-                    Index = table.Column<string>(type: "text", nullable: true),
+                    Index = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Rating = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Problems", x => x.Id);
+                    table.PrimaryKey("PK_Problems", x => new { x.ContestId, x.Index });
                 });
 
             migrationBuilder.CreateTable(
@@ -295,7 +296,8 @@ namespace API.Data.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Verdict = table.Column<string>(type: "text", nullable: true),
-                    ProblemId = table.Column<int>(type: "integer", nullable: false),
+                    ProblemIndex = table.Column<string>(type: "text", nullable: true),
+                    ProblemContestId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -309,28 +311,28 @@ namespace API.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Submissions_Problems_ProblemId",
-                        column: x => x.ProblemId,
+                        name: "FK_Submissions_Problems_ProblemContestId_ProblemIndex",
+                        columns: x => new { x.ProblemContestId, x.ProblemIndex },
                         principalTable: "Problems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumns: new[] { "ContestId", "Index" });
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProblemTag",
                 columns: table => new
                 {
-                    ProblemsId = table.Column<int>(type: "integer", nullable: false),
-                    TagsId = table.Column<int>(type: "integer", nullable: false)
+                    TagsId = table.Column<int>(type: "integer", nullable: false),
+                    ProblemsContestId = table.Column<int>(type: "integer", nullable: false),
+                    ProblemsIndex = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProblemTag", x => new { x.ProblemsId, x.TagsId });
+                    table.PrimaryKey("PK_ProblemTag", x => new { x.TagsId, x.ProblemsContestId, x.ProblemsIndex });
                     table.ForeignKey(
-                        name: "FK_ProblemTag_Problems_ProblemsId",
-                        column: x => x.ProblemsId,
+                        name: "FK_ProblemTag_Problems_ProblemsContestId_ProblemsIndex",
+                        columns: x => new { x.ProblemsContestId, x.ProblemsIndex },
                         principalTable: "Problems",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "ContestId", "Index" },
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProblemTag_Tags_TagsId",
@@ -447,12 +449,13 @@ namespace API.Data.Migrations
                 name: "DailyTaskProblem",
                 columns: table => new
                 {
-                    ProblemsId = table.Column<int>(type: "integer", nullable: false),
-                    TasksId = table.Column<int>(type: "integer", nullable: false)
+                    TasksId = table.Column<int>(type: "integer", nullable: false),
+                    ProblemsContestId = table.Column<int>(type: "integer", nullable: false),
+                    ProblemsIndex = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DailyTaskProblem", x => new { x.ProblemsId, x.TasksId });
+                    table.PrimaryKey("PK_DailyTaskProblem", x => new { x.TasksId, x.ProblemsContestId, x.ProblemsIndex });
                     table.ForeignKey(
                         name: "FK_DailyTaskProblem_DailyTasks_TasksId",
                         column: x => x.TasksId,
@@ -460,10 +463,10 @@ namespace API.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_DailyTaskProblem_Problems_ProblemsId",
-                        column: x => x.ProblemsId,
+                        name: "FK_DailyTaskProblem_Problems_ProblemsContestId_ProblemsIndex",
+                        columns: x => new { x.ProblemsContestId, x.ProblemsIndex },
                         principalTable: "Problems",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "ContestId", "Index" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -516,9 +519,9 @@ namespace API.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DailyTaskProblem_TasksId",
+                name: "IX_DailyTaskProblem_ProblemsContestId_ProblemsIndex",
                 table: "DailyTaskProblem",
-                column: "TasksId");
+                columns: new[] { "ProblemsContestId", "ProblemsIndex" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DailyTasks_GroupId",
@@ -536,14 +539,14 @@ namespace API.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProblemTag_TagsId",
+                name: "IX_ProblemTag_ProblemsContestId_ProblemsIndex",
                 table: "ProblemTag",
-                column: "TagsId");
+                columns: new[] { "ProblemsContestId", "ProblemsIndex" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Submissions_ProblemId",
+                name: "IX_Submissions_ProblemContestId_ProblemIndex",
                 table: "Submissions",
-                column: "ProblemId");
+                columns: new[] { "ProblemContestId", "ProblemIndex" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Submissions_UserId",

@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Extensions;
 using API.Interfaces;
 using API.Models;
@@ -30,10 +32,10 @@ public class UsersController : BaseController
         return Ok(res);
     }
 
-    [HttpGet("{username}")]
-    public async Task<ActionResult<UserDto>> GetUser(string username)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserDto>> GetUser(int id)
     {
-        var user = await Users.GetUserProfileAsync(username);
+        var user = await Users.GetUserProfileAsync(id);
         if (user is null) return NotFound();
         return user;
     }

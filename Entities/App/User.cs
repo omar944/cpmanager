@@ -12,17 +12,22 @@ public class User : IdentityUser<int>
     public string? CodeChefHandle { get; set; }
     public string? University { get; set; }
     public string? Faculty { get; set; }
+    public string? FullName { get; set; }
     public string? ProfilePhoto { get; set; } // TODO: Change this to "UserPhoto" class
+    public string? Gender { get; set; }
 
     public ICollection<Team>? Teams { get; set; }
     public ICollection<Participation>? Participations { get; set; }
-    public ICollection<TrainingGroupUser> TrainingGroups { get; set; } = null;
+    public ICollection<TrainingGroupUser> TrainingGroups { get; set; } = null!;
 
     public ICollection<TrainingGroup>? TeachingGroups { get; set; }
     public ICollection<Blog>? Blogs { get; set; }
 
     public ICollection<UserRole> UserRoles { get; set; } = null!;
-
     public ICollection<Submission>? Submissions { get; set; }
-    
+
+    public bool GetIsCoach()
+    {
+        return UserRoles.Select(x=>x.Role).Any(r=>r.Name=="Coach");
+    }
 }

@@ -49,7 +49,7 @@ public static class IdentityServiceExtensions
         services.AddAuthorization(opt =>
         {
             opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-            opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
+            opt.AddPolicy("RequireCoachRole", policy => policy.RequireRole("Admin", "Coach"));
         });
         return services;
     }  

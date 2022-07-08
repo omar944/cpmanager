@@ -57,9 +57,10 @@ public class DailyTasksController:CrudController<DailyTaskCreateDto,DailyTaskDto
     }
     
     [HttpPut("{id:int}")]
-    public override async Task<ActionResult> Update(int id, [FromBody] DailyTaskCreateDto dto)
+    public override Task<ActionResult> Update(int id, [FromBody] DailyTaskCreateDto dto)
     {
-        return BadRequest();
+        throw new NotImplementedException();
+        //return BadRequest();
     }
     
     

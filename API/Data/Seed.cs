@@ -8,13 +8,9 @@ namespace API.Data;
 public static class Seed
 {
     public static async Task SeedUsers(UserManager<User> userManager, RoleManager<Role> roleManager,
-        AppDbContext context, CodeforcesApiService apiService,IMapper mapper)
+        AppDbContext context, CodeforcesApiService apiService, IMapper mapper)
     {
         if (await userManager.Users.AnyAsync()) return;
-
-        // var userData = await File.ReadAllTextAsync("Data/UserSeedData.json");
-        // var users = JsonSerializer.Deserialize<List<User>>(userData);
-        // if (users == null) return;
 
         var roles = new List<Role>
         {
@@ -28,30 +24,33 @@ public static class Seed
             await roleManager.CreateAsync(role);
         }
 
+        await context.SaveChangesAsync();
         var account = await apiService.GetUserAsync("omar94");
-        
+
         var users = new List<User>()
         {
-            new() {UserName = "omar",CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)},
-            new() {UserName = "ahmad"},
-            new() {UserName = "ali"},
-            new() {UserName = "yahya"},
+            new() {UserName = "omar",Email = "omar@mail.com", CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)},
+            new() {UserName = "ahmad",Email = "ahmad@mail.com"},
+            new() {UserName = "ali",Email = "ali@mail.com"},
+            new() {UserName = "yahya",Email = "yahya@mail.com"},
         };
-        
+
         foreach (var user in users)
         {
-            user.UserName = user.UserName.ToLower();
+            user.Email = user.Email.ToLower();
             await userManager.CreateAsync(user, "123.com.net");
             await userManager.AddToRoleAsync(user, "Member");
         }
 
         var admin = new User
         {
-            UserName = "admin"
+            UserName = "admin",
+            Email = "admin@mail.com"
         };
         await userManager.CreateAsync(admin, "123.com.net");
         await userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
-
+        await context.SaveChangesAsync();
+        
         var team = new Team
         {
             Name = "team1",
@@ -84,63 +83,57 @@ public static class Seed
             new() {TrainingGroup = group, User = await context.Users.FindAsync(1)}
         };
         group!.Students = trainees;
-
-        var problems = await apiService.GetAllProblems();
-        foreach (var dto in problems)
-        {
-            foreach (var tag in dto.Tags)
-            {
-                if (await context.Tags.FirstOrDefaultAsync(t => t.Name == tag) == null)
-                {
-                    context.Tags.Add(new Tag {Name = tag});
-                }
-            }
-            await context.SaveChangesAsync();
-            
-            context.Problems.Add(new Problem
-            {
-                Name=dto.Name,
-                ContestId=dto.ContestId,
-                Index=dto.Index,
-                Rating=dto.Rating,
-                Tags = await context.Tags.Where(t=>dto.Tags.Contains(t.Name)).ToListAsync()
-            });
-        }
-
-        var submissions = await apiService.GetSubmissionsAsync("omar94",200);
-        foreach (var dto in submissions)
-        {
-            if (dto.Verdict != "OK") continue;
-            
-            var propblemDto = dto.Problem;
-            if (await context.Problems.Where(x => x.Name == propblemDto.Name).AnyAsync() == false)
-            {
-                foreach (var tag in propblemDto.Tags)
-                {
-                    if (await context.Tags.FirstOrDefaultAsync(t => t.Name == tag) == null)
-                    {
-                        context.Tags.Add(new Tag {Name = tag});
-                    }
-                }
-
-                await context.SaveChangesAsync();
-                context.Problems.Add(new Problem
-                {
-                    Name = propblemDto.Name,
-                    ContestId = propblemDto.ContestId,
-                    Index = propblemDto.Index,
-                    Rating = propblemDto.Rating,
-                    Tags = await context.Tags.Where(t => propblemDto.Tags.Contains(t.Name)).ToListAsync()
-                });
-            }
-            await context.SaveChangesAsync();
-            context.Submissions.Add(new Submission
-            {
-                Author=await context.Users.FindAsync(1),
-                Problem=await context.Problems.Where(x=>x.Name==propblemDto.Name).FirstOrDefaultAsync(),
-                Verdict="OK"
-            });
-        }
+    }
+    
+    public static async Task SeedProblems(AppDbContext context, CodeforcesApiService apiService)
+    {
+        if (await context.Problems.AnyAsync()) return;
+        
+        var tags = UsedTags.TagsUsed.Select(x => new Tag {Name = x}).ToList();
+        context.Tags.AddRange(tags);
         await context.SaveChangesAsync();
+        
+        var problems = await apiService.GetAllProblems();
+        var problemsToAdd = problems?.
+            Where(x => !x.Tags!.Contains("*special") && x.Tags.All(t=>UsedTags.TagsUsed.Contains(t)))
+            .Take(500)
+            .Select(x=>new Problem
+            {
+                Name=x.Name,
+                ContestId=x.ContestId,
+                Index=x.Index,
+                Rating=x.Rating,
+                Tags = context.Tags.Where(t=>x.Tags!.Contains(t.Name!)).ToList()
+            }).AsParallel();
+        
+        await context.Problems.AddRangeAsync(problemsToAdd!);
+        await context.SaveChangesAsync();
+    }
+
+    public static async Task SeedSubmissions(AppDbContext context, CodeforcesApiService apiService)
+    {
+        if (await context.Submissions.AnyAsync()) return;
+        var problems = await context.Problems.ToListAsync();
+        var author = await context.Users.FindAsync(1);
+
+        var users = new List<string> {"omar94"};
+
+        foreach (var user in users)
+        {
+            var submissions = await apiService.GetSubmissionsAsync(user);
+            var submissionsToAdd = submissions?
+                .Where(x => x.Verdict == "OK" && !x.Problem!.Tags!.Contains("*special")
+                                              && x.Problem.Tags.All(t => UsedTags.TagsUsed.Contains(t))
+                                              && problems.Any(p =>
+                                                  p.Index == x.Problem.Index && p.ContestId == x.Problem.ContestId))
+                .Select(s => new Submission
+                {
+                    Author = author,
+                    Problem = context.Problems.Find(s.Problem?.ContestId, s.Problem?.Index),
+                    Verdict = "OK"
+                }).AsParallel();
+            await context.AddRangeAsync(submissionsToAdd!);
+            await context.SaveChangesAsync();
+        }
     }
 }

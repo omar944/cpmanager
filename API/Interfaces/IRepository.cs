@@ -1,12 +1,10 @@
-﻿using API.Data;
-using API.Models;
+﻿using API.Models;
 using Entities;
 
 namespace API.Interfaces;
 
 public interface IRepository<TEntity> where TEntity : BaseEntity
 {
-    public AppDbContext Context();
     public Task<IEnumerable<TEntity>> GetAllAsync();
     public IQueryable<TEntity> GetQuery();
     public Task<TEntity?> GetByIdAsync(int id);

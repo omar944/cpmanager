@@ -6,9 +6,9 @@ using Entities.App;
 
 namespace API.Controllers;
 
-public class TrainigGroupsController:CrudController<TrainingGroupCreateDto,TrainingGroupDto,TrainingGroup>
+public class TrainingGroupsController:CrudController<TrainingGroupCreateDto,TrainingGroupDto,TrainingGroup>
 {
-    public TrainigGroupsController(IRepository<TrainingGroup> repository, IMapper mapper, IUserRepository users) :
+    public TrainingGroupsController(IRepository<TrainingGroup> repository, IMapper mapper, IUserRepository users) :
         base(repository, mapper, users)
     {
     }
