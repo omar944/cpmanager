@@ -74,10 +74,10 @@ public class UsersController : BaseController
     }
 
     [HttpPatch]
-    public Task<ActionResult<UserDto>> UpdateUser()
+    public async Task<ActionResult<UserDto?>> UpdateUser([FromBody]UserUpdateDto dto)
     {
-        throw new NotImplementedException();
+        var user = await GetUser();
+        _mapper.Map(dto, user);
+        return await Users.GetUserProfileAsync(User.GetUserId());
     }
-
-    //update user
 }

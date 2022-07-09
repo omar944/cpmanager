@@ -41,6 +41,11 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         {
             User = x, Team = team
         });
+        team.Members = membersToAdd.ToList();
+        if (dto.CoachId is not null)
+        {
+            team.CoachId = dto.CoachId.Value;
+        }
         Repository.Add(team);
         if (await Repository.SaveChangesAsync() == false)
             return BadRequest(new {message = "error creating resource"});

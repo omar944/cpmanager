@@ -12,6 +12,9 @@ public class AutoMapperConfiguration : Profile
         // CreateMap<MemberUpdateDto,AppUser>().
         //     ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         
+        CreateMap<UserUpdateDto,User>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        
         CreateMap<RegisterDto, User>();
         CreateMap<User, UserDto>();
         CreateMap<User, UserBlogDto>();
@@ -43,5 +46,6 @@ public class AutoMapperConfiguration : Profile
         CreateMap<UserRole, string>().ConvertUsing(x=>x.Role.Name);
         
         CreateMap<TeamUser,TeamDto>().IncludeMembers(u=>u.Team);
+        CreateMap<TeamUser,TeamUserDto>().IncludeMembers(u=>u.User);
     }
 }

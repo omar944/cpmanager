@@ -9,4 +9,6 @@ public class TeamCreateDto
 
     [Required]
     public List<int>? Members { get; set; }
+
+    public int? CoachId { get; set; }
 }
