@@ -41,5 +41,7 @@ public class AutoMapperConfiguration : Profile
         CreateMap<DailyTask, DailyTaskDto>();
 
         CreateMap<UserRole, string>().ConvertUsing(x=>x.Role.Name);
+        
+        CreateMap<TeamUser,TeamDto>().IncludeMembers(u=>u.Team);
     }
 }
