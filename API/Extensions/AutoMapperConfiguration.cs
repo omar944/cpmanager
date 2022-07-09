@@ -16,6 +16,8 @@ public class AutoMapperConfiguration : Profile
         CreateMap<User, UserDto>();
         CreateMap<User, UserBlogDto>();
         CreateMap<Team, TeamDto>();
+
+        CreateMap<User, TeamUserDto>();
         
         CreateMap<Blog, BlogDto>();
 
@@ -23,7 +25,9 @@ public class AutoMapperConfiguration : Profile
 
         CreateMap<TrainingGroupUser, TrainingGroupDto>().IncludeMembers(u=>u.TrainingGroup);
         CreateMap<TrainingGroup, TrainingGroupDto>();
-        CreateMap<TrainingGroupUser, int>().ConvertUsing(u => u.User!.Id);
+        CreateMap<TrainingGroupUser, int>().ConvertUsing(u => u.UserId);
+        
+        CreateMap<TeamUser, int>().ConvertUsing(u => u.UserId);
 
         CreateMap<User, int>().ConvertUsing(u => u.Id);
         CreateMap<User, string>().ConvertUsing(u => u.UserName);

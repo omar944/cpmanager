@@ -29,10 +29,14 @@ public static class Seed
 
         var users = new List<User>()
         {
-            new() {UserName = "omar",Email = "omar@mail.com", CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)},
-            new() {UserName = "ahmad",Email = "ahmad@mail.com"},
-            new() {UserName = "ali",Email = "ali@mail.com"},
-            new() {UserName = "yahya",Email = "yahya@mail.com"},
+            new()
+            {
+                FullName = "omar", UserName = "omar", Email = "omar@mail.com",
+                CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)
+            },
+            new() {FullName = "ahmad", UserName = "ahmad", Email = "ahmad@mail.com"},
+            new() {FullName = "ali", UserName = "ali", Email = "ali@mail.com"},
+            new() {FullName = "yahya", UserName = "yahya", Email = "yahya@mail.com"},
         };
 
         foreach (var user in users)
@@ -54,9 +58,17 @@ public static class Seed
         var team = new Team
         {
             Name = "team1",
-            Members = await context.Users.Where(x => x.UserName != "admin").ToListAsync()
+            Coach = await context.Users.FindAsync(1),
         };
+        var members = await context.Users.Where(x => x.UserName != "admin").ToListAsync();
+        var membersToAdd = members.Select(x=>new TeamUser
+        {
+            User = x,
+            Team=team
+        }).ToList();
+        team.Members = membersToAdd;
         await context.Teams.AddAsync(team);
+        
         var participation = new Participation
         {
             Location = "Russia",

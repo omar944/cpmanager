@@ -17,14 +17,15 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
     }
 
     [HttpGet("{username}")]
-    public async Task< ActionResult<IEnumerable<TeamDto>> > GetUserTeams(string username)
+    public Task< ActionResult<IEnumerable<TeamDto>> > GetUserTeams(string username)
     {
-        var user = await Users.GetUserByUsernameAsync(username);
-        if (user is null) return BadRequest(new{message="no such user"});
-        var query = Repository.GetQuery().Include(x => x.Members)
-            .Where(x => x.Members!.Contains(user))
-            .ProjectTo<TeamDto>(Mapper.ConfigurationProvider);
-        return await query.ToListAsync();
+        throw new NotImplementedException();
+        // var user = await Users.GetUserByUsernameAsync(username);
+        // if (user is null) return BadRequest(new{message="no such user"});
+        // var query = Repository.GetQuery().Include(x => x.Members).
+        //     .Where(x => x.Members!.Contains(user))
+        //     .ProjectTo<TeamDto>(Mapper.ConfigurationProvider);
+        // return await query.ToListAsync();
     }
     
     [HttpPost]
@@ -34,9 +35,12 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         var members = await Users.GetUsersAsync(dto.Members!);
         var team = new Team
         {
-            Name = dto.Name,
-            Members = members
+            Name = dto.Name
         };
+        var membersToAdd = members.Select(x => new TeamUser
+        {
+            User = x, Team = team
+        });
         Repository.Add(team);
         if (await Repository.SaveChangesAsync() == false)
             return BadRequest(new {message = "error creating resource"});
@@ -52,7 +56,10 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         if (team is null) return NotFound();
         team.Members?.Clear();
         var members = await Users.GetUsersAsync(dto.Members!);
-        team.Members = members;
+        team.Members = members.Select(x => new TeamUser
+        {
+            User = x
+        }).ToList();
         team.Name = dto.Name;
         Repository.Update(team);
         if (await Repository.SaveChangesAsync() == false) return BadRequest(new {message = "error updating"});

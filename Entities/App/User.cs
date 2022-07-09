@@ -16,7 +16,8 @@ public class User : IdentityUser<int>
     public string? ProfilePhoto { get; set; } // TODO: Change this to "UserPhoto" class
     public string? Gender { get; set; }
 
-    public ICollection<Team>? Teams { get; set; }
+    public ICollection<TeamUser>? Teams { get; set; }
+    public ICollection<Team>? Supervising { get; set; }
     public ICollection<Participation>? Participations { get; set; }
     public ICollection<TrainingGroupUser> TrainingGroups { get; set; } = null!;
 

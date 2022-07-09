@@ -83,6 +83,17 @@ public class AppDbContext : IdentityDbContext<User, Role, int
 
         builder.Entity<Problem>()
             .HasKey(p => new {p.ContestId, p.Index});
+        
+         // teams
+         builder.Entity<User>()
+             .HasMany(u => u.Teams)
+             .WithOne(u => u.User)
+             .HasForeignKey(u => u.UserId);
+        
+         builder.Entity<Team>()
+             .HasMany(u => u.Members)
+             .WithOne(u => u.Team)
+             .HasForeignKey(u => u.TeamId);
     }
 }
 

@@ -2,7 +2,8 @@
 
 public class Team : BaseEntity
 {
-    //coach 
     public string? Name { get; set; }
-    public ICollection<User>? Members { get; set; }
+    public ICollection<TeamUser>? Members { get; set; }
+    public User? Coach { get; set; }
+    public int CoachId { get; set; }
 }

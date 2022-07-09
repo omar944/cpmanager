@@ -72,6 +72,12 @@ public class UsersController : BaseController
 
         return Ok();
     }
-    
+
+    [HttpPatch]
+    public Task<ActionResult<UserDto>> UpdateUser()
+    {
+        throw new NotImplementedException();
+    }
+
     //update user
 }
