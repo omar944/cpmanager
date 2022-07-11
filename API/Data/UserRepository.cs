@@ -51,6 +51,7 @@ public class UserRepository : IUserRepository
     public async Task<UserDto?> GetUserProfileAsync(int id, bool? owner=false)
     {
         return await _users.Include(x=>x.UserRoles).ThenInclude(r=>r.Role).AsNoTracking()
+            .AsSplitQuery()
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(x => x.Id == id);
     }

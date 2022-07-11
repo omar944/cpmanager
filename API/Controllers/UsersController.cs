@@ -78,6 +78,8 @@ public class UsersController : BaseController
     {
         var user = await GetUser();
         _mapper.Map(dto, user);
+        Users.Update(user);
+        await Users.SaveChangesAsync();
         return await Users.GetUserProfileAsync(User.GetUserId());
     }
 }

@@ -148,4 +148,18 @@ public static class Seed
             await context.SaveChangesAsync();
         }
     }
+
+    public static async Task SeedCodeforcesUsers(AppDbContext context, CodeforcesApiService apiService
+        , IMapper mapper)
+    {
+        if (await context.CodeforceseAccounts.CountAsync() > 1) return;
+        var users = await apiService.GetSyriaUsers();
+        if (users is null) return;
+        var usersToAdd = users.Where(x => x.Country == "Syria").
+            Select(mapper.Map<CodeforcesAccount>).Take(100);
+
+        await context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
+        await context.SaveChangesAsync();
+
+    }
 }
