@@ -2,6 +2,7 @@ using API.Extensions;
 using API.Interfaces;
 using API.Models;
 using AutoMapper.QueryableExtensions;
+using CloudinaryDotNet.Actions;
 using Entities.App;
 using Microsoft.AspNetCore.Authorization;
 
@@ -49,16 +50,22 @@ public class BlogsController : CrudController<BlogCreateDto, BlogDto, Blog>
     public override async Task<ActionResult> Create([FromForm] BlogCreateDto blogDto)
     {
         var user = await GetUser();
-        var imageUploadResult = await _photoService.AddPhotoAsync(blogDto.Image!);
-
-        if (imageUploadResult.Error != null)
+        string uri = "";
+        
+        if (blogDto.Image != null)
         {
-            return BadRequest(imageUploadResult.Error.Message);
+            var imageUploadResult = await _photoService.AddPhotoAsync(blogDto.Image!);
+            if (imageUploadResult.Error != null)
+            {
+                return BadRequest(imageUploadResult.Error.Message);
+            }
+            uri = imageUploadResult.SecureUrl.AbsoluteUri;
         }
+
         var blog = new Blog
         {
             Content = blogDto.Content,
-            Photo = imageUploadResult.SecureUrl.AbsoluteUri,
+            Photo = uri,
             Author = user,
             AuthorId = user.Id,
             CreatedAt = DateTime.UtcNow
@@ -91,10 +98,10 @@ public class BlogsController : CrudController<BlogCreateDto, BlogDto, Blog>
         return BadRequest("Problem adding photo");
     }
     
-    // PUT requests
-    [HttpPut("update/{id:int}"), Authorize]
-    public async Task<ActionResult> UpdateBlog([FromQuery] int id, [FromForm] BlogUpdateDto dto)
+    [HttpPatch("update-content/{id:int}"), Authorize]
+    public async Task<ActionResult> UpdateBlogContent(int id, BlogUpdateDto dto)
     {
+        
         var currentUserId = User.GetUserId();
         var blog = await Repository.GetByIdAsync(id);
         
@@ -102,11 +109,6 @@ public class BlogsController : CrudController<BlogCreateDto, BlogDto, Blog>
         if (blog.AuthorId != currentUserId) return BadRequest("You can only edit your own blogs.");
         
         blog.Content = dto.Content;
-        if (dto.Image != null)
-        {
-            var uploadResult = await _photoService.AddPhotoAsync(dto.Image!);
-            blog.Photo = uploadResult.Error != null ? uploadResult.SecureUrl.AbsoluteUri : blog.Photo;   
-        }
         Repository.Update(blog);
         if (await Repository.SaveChangesAsync())
             return Ok(Mapper.Map<BlogDto>(blog));
