@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
-public class BlogController : CrudController<BlogCreateDto, BlogDto, Blog>
+public class BlogsController : CrudController<BlogCreateDto, BlogDto, Blog>
 {
     private readonly IPhotoService _photoService;
     //private readonly IRepository<BlogPhoto> PhotoRepository;
     
-    public BlogController(IRepository<Blog> repository, IMapper mapper, IUserRepository users, 
+    public BlogsController(IRepository<Blog> repository, IMapper mapper, IUserRepository users, 
         IPhotoService photoService)
         : base(repository, mapper, users)
     {

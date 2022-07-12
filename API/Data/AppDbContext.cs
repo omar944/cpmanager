@@ -20,6 +20,8 @@ public class AppDbContext : IdentityDbContext<User, Role, int
     
     public DbSet<Blog> Blogs { get; set; } = null!;
 
+    public DbSet<TrainingSession> TrainingSessions { get; set; } = null!;
+
     //codeforces
     public DbSet<Problem> Problems { get; set; } = null!;
     public DbSet<Submission> Submissions { get; set; } = null!;

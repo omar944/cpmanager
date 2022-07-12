@@ -23,7 +23,9 @@ public class AutoMapperConfiguration : Profile
         CreateMap<User, TeamUserDto>();
         
         CreateMap<Blog, BlogDto>();
-
+        
+        CreateMap<TrainingSession, TrainingSessionDto>().ReverseMap();
+        
         CreateMap<Participation, ParticipationDto>();
 
         CreateMap<TrainingGroupUser, TrainingGroupDto>().IncludeMembers(u=>u.TrainingGroup);

@@ -8,4 +8,6 @@ public class BlogDto : BaseDto
     public string? Photo { get; set; }
 
     public UserBlogDto? Author { get; set; }
+    
+    public DateTime? CreatedAt { get; set; }
 }
