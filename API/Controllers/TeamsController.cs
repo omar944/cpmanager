@@ -31,6 +31,16 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         return await query.ToListAsync();
     }
     
+    [HttpGet("search/{searchQuery}")]
+    public async Task< ActionResult<IEnumerable<TeamDto>> > GetFilteredTeams(string searchQuery)
+    {
+        var result = Repository.GetQuery()
+            .Include(x => x.Members)
+            .Where(team => team.Name!.Contains(searchQuery))
+            .ProjectTo<TeamDto>(Mapper.ConfigurationProvider);
+        
+        return await result.ToListAsync();
+    }
     [HttpPost]
     public override async Task<ActionResult> Create([FromBody] TeamCreateDto dto)
     {

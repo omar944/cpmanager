@@ -14,4 +14,5 @@ public interface IUserRepository
     Task<bool> SaveChangesAsync();
     Task<List<User>> GetUsersAsync(List<int>ids);
     public IQueryable<User> GetQuery();
+    Task<IEnumerable<UserDto>> GetFilteredUsersProfilesAsync(string searchQuery);
 }

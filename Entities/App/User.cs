@@ -1,8 +1,10 @@
 ﻿using Entities.Codeforces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entities.App;
 
+[Index(nameof(FullName))]
 public class User : IdentityUser<int>
 {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

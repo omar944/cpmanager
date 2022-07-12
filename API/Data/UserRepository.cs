@@ -42,7 +42,14 @@ public class UserRepository : IUserRepository
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
         //return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
-
+    
+    public async Task<IEnumerable<UserDto>> GetFilteredUsersProfilesAsync(string searchQuery)
+    {
+        return await _userManager.Users.Include(x=>x.UserRoles)
+            .ThenInclude(r=>r.Role).AsNoTracking()
+            .Where(user => user.FullName!.Contains(searchQuery))
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
+    }
     public async Task<IEnumerable<User>> GetUsersAsync()
     {
         return await _users.ToListAsync();

@@ -31,8 +31,15 @@ public class UsersController : BaseController
         var res = await Users.GetUsersProfilesAsync();
         return Ok(res);
     }
-
-    [HttpGet("{id}")]
+    
+    [HttpGet("search/{searchQuery}")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetFilteredUsers(string searchQuery)
+    {
+        var res = await Users.GetFilteredUsersProfilesAsync(searchQuery);
+        return Ok(res);
+    }
+    
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
         var user = await Users.GetUserProfileAsync(id);
