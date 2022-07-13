@@ -39,12 +39,12 @@ try
     var roleManager = services.GetRequiredService<RoleManager<Role>>();
     var dbContext = services.GetRequiredService<AppDbContext>();
     var apiService = services.GetRequiredService<CodeforcesApiService>();
-    var mapper=services.GetRequiredService<IMapper>();
+    var mapper = services.GetRequiredService<IMapper>();
     await context.Database.MigrateAsync();
-    await Seed.SeedUsers(userManager, roleManager,dbContext,apiService,mapper);
-    await Seed.SeedProblems(dbContext,apiService);
-    await Seed.SeedSubmissions(dbContext,apiService);
-    //await Seed.SeedCodeforcesUsers(dbContext, apiService, mapper);
+    await Seed.SeedUsers(userManager, roleManager, dbContext, apiService, mapper);
+    await Seed.SeedProblems(dbContext, apiService);
+    await Seed.SeedSubmissions(dbContext, apiService);
+    await Seed.SeedCodeforcesUsers(dbContext, apiService, mapper);
 }
 catch (Exception e)
 {

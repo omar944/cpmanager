@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220713160223_codefrocesAccounts2")]
+    partial class codefrocesAccounts2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -411,9 +413,6 @@ namespace API.Data.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CodeforcesAccountForeignKey")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Contribution")
                         .HasColumnType("integer");
 
@@ -447,6 +446,9 @@ namespace API.Data.Migrations
                     b.Property<string>("Organization")
                         .HasColumnType("text");
 
+                    b.Property<int?>("OwnerId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Rank")
                         .HasColumnType("text");
 
@@ -461,7 +463,7 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodeforcesAccountForeignKey")
+                    b.HasIndex("OwnerId")
                         .IsUnique();
 
                     b.ToTable("CodeforceseAccounts");
@@ -778,7 +780,7 @@ namespace API.Data.Migrations
                 {
                     b.HasOne("Entities.App.User", "Owner")
                         .WithOne("CodeforcesAccount")
-                        .HasForeignKey("Entities.Codeforces.CodeforcesAccount", "CodeforcesAccountForeignKey");
+                        .HasForeignKey("Entities.Codeforces.CodeforcesAccount", "OwnerId");
 
                     b.Navigation("Owner");
                 });

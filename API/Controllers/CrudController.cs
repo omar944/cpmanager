@@ -61,7 +61,7 @@ public abstract class CrudController<TInputDto, TOutputDto, TEntity> : BaseContr
         entity = Mapper.Map(dto,entity);
         Repository.Update(entity);
         if (await Repository.SaveChangesAsync() == false) return BadRequest(new {message = "error updating"});
-        return Ok(Repository.GetProjectedById<TOutputDto>(id));
+        return Ok(await Repository.GetProjectedById<TOutputDto>(id));
     }
 
 }

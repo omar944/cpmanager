@@ -47,7 +47,8 @@ public class AppDbContext : IdentityDbContext<User, Role, int
         builder.Entity<User>()
             .HasOne(u => u.CodeforcesAccount)
             .WithOne(x => x.Owner)
-            .HasForeignKey<CodeforcesAccount>(c => c.CodeforcesAccountForeignKey);
+            .HasForeignKey<CodeforcesAccount>(c => c.CodeforcesAccountForeignKey)
+            .IsRequired(false);
 
         //Training groups
         builder.Entity<User>()

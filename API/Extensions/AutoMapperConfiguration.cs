@@ -49,5 +49,8 @@ public class AutoMapperConfiguration : Profile
         
         CreateMap<TeamUser,TeamDto>().IncludeMembers(u=>u.Team);
         CreateMap<TeamUser,TeamUserDto>().IncludeMembers(u=>u.User);
+
+        CreateMap<ParticipationCreateDto, Participation>();
+        CreateMap<Participation,ParticipationDto>();
     }
 }

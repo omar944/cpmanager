@@ -5,7 +5,7 @@ namespace Entities.Codeforces;
 public class CodeforcesAccount : BaseEntity
 {
     public User? Owner { get; set; }
-    public int CodeforcesAccountForeignKey { get; set; }
+    public int? CodeforcesAccountForeignKey { get; set; }
     public string? Handle { get; set; }
 
     public string? FirstName { get; set; }

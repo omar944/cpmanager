@@ -15,6 +15,7 @@ public class UserDto
     public string? Faculty { get; set; }
     public string? ProfilePhoto { get; set; }
     public string? Gender { get; set; }
+    public string? Bio { get; set; }
     
     public ICollection<TeamDto>? Teams { get; set; }
     public ICollection<ParticipationDto>? Participations { get; set; }

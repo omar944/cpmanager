@@ -26,7 +26,7 @@ public static class Seed
 
         await context.SaveChangesAsync();
         var account = await apiService.GetUserAsync("omar94");
-
+        
         var users = new List<User>()
         {
             new()
@@ -75,7 +75,7 @@ public static class Seed
             Rank = 1,
             Name = "ICPC 2020",
             Year = "2020",
-            Team = team,
+            TeamName = "Red Panda",
             User = await context.Users.FindAsync(1)
         };
         await context.Participations.AddAsync(participation);
@@ -156,7 +156,7 @@ public static class Seed
         var users = await apiService.GetSyriaUsers();
         if (users is null) return;
         var usersToAdd = users.Where(x => x.Country == "Syria").
-            Select(mapper.Map<CodeforcesAccount>).Take(100);
+            Select(mapper.Map<CodeforcesAccount>).Take(100).AsParallel();
 
         await context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
         await context.SaveChangesAsync();
