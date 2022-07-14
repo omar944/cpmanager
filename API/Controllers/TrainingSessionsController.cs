@@ -58,6 +58,7 @@ public class TrainingSessionsController: CrudController<TrainingSessionDto, Trai
         var result = Repository.GetQuery()
             .Where(session => session.SessionDate!.Value.CompareTo(Now) > 0)
             .AsNoTracking()
+            .OrderBy(x=>x.SessionDate)
             .Take(2)
             .ProjectTo<TrainingSessionDto>(Mapper.ConfigurationProvider);
 
