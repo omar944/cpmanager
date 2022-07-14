@@ -22,6 +22,7 @@ public class AutoMapperConfiguration : Profile
 
         CreateMap<User, TeamUserDto>();
         
+        
         CreateMap<Blog, BlogDto>();
         
         CreateMap<TrainingSession, TrainingSessionDto>().ReverseMap();
@@ -29,8 +30,12 @@ public class AutoMapperConfiguration : Profile
         CreateMap<Participation, ParticipationDto>();
 
         CreateMap<TrainingGroupUser, TrainingGroupDto>().IncludeMembers(u=>u.TrainingGroup);
+        CreateMap<User, TrainingGroupStudentDto>();
         CreateMap<TrainingGroup, TrainingGroupDto>();
-        CreateMap<TrainingGroupUser, int>().ConvertUsing(u => u.UserId);
+        //CreateMap<TrainingGroupUser, int>().ConvertUsing(u => u.UserId);
+        CreateMap<TrainingGroupUser, TrainingGroupStudentDto>().IncludeMembers(u=>u.User)
+            .ForMember(x=>x.Id,opt=>opt.MapFrom(src=>src.User!.Id));
+        // CreateMap<TrainingGroup, TrainingGroupStudentDto>();
         
         CreateMap<TeamUser, int>().ConvertUsing(u => u.UserId);
 

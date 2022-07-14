@@ -1,8 +1,8 @@
-﻿using API.Data;
-using API.Interfaces;
+﻿using API.Interfaces;
 using API.Models;
 using AutoMapper.QueryableExtensions;
 using Entities.App;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
@@ -22,7 +22,8 @@ public class TrainingGroupsController:CrudController<TrainingGroupCreateDto,Trai
         var group = new TrainingGroup
         {
             Coach = user,
-            Name = dto.Name
+            Name = dto.Name,
+            Level = dto.Level
         };
         group.Students = students.Select(st => new TrainingGroupUser
         {
@@ -36,7 +37,25 @@ public class TrainingGroupsController:CrudController<TrainingGroupCreateDto,Trai
 
         return Created("",Mapper.Map<TrainingGroupDto>(group));
     }
-    
+
+    [HttpPost("{id:int}/join")]
+    public async Task<ActionResult> Join(int id)
+    {
+        var user = await GetUser();
+        var group = await Repository.GetQuery().Include(x=>x.Students).FirstOrDefaultAsync(x=>x.Id==id);
+        if (group is null)
+            return BadRequest("no such group");
+        group.Students ??= new List<TrainingGroupUser>();
+        if (group.Students.Any(x => x.User == user)) return BadRequest();
+        group.Students.Add(new TrainingGroupUser
+        {
+            User=user,
+            TrainingGroup = group
+        });
+        Repository.Update(group);
+        if (await Repository.SaveChangesAsync() == false) return BadRequest("error joining");
+        return Ok();
+    }
 
     [HttpPatch("{id:int}")]
     public override async Task<ActionResult> Update(int id, [FromBody]TrainingGroupCreateDto dto)
