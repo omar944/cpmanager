@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using API.Extensions;
 using API.Interfaces;
 using API.Models;
+using API.Services;
+using CodeforcesTool.Models;
 using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
@@ -15,14 +17,16 @@ public class UsersController : BaseController
     private readonly IMapper _mapper;
     private readonly IPhotoService _photoService;
     private readonly CodeforcesApiService _codeforcesService;
+    private readonly IStatisticsService _statisticsService;
 
     public UsersController(IUserRepository repository, IMapper mapper, CodeforcesApiService codeforcesService,
-        IPhotoService photoService) :
+        IPhotoService photoService, IStatisticsService statisticsService) :
         base(repository)
     {
         _mapper = mapper;
         _codeforcesService = codeforcesService;
         _photoService = photoService;
+        _statisticsService = statisticsService;
     }
 
     [HttpGet]
@@ -31,14 +35,14 @@ public class UsersController : BaseController
         var res = await Users.GetUsersProfilesAsync();
         return Ok(res);
     }
-    
+
     [HttpGet("search/{searchQuery}")]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetFilteredUsers(string searchQuery)
     {
         var res = await Users.GetFilteredUsersProfilesAsync(searchQuery);
         return Ok(res);
     }
-    
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
@@ -46,7 +50,7 @@ public class UsersController : BaseController
         if (user is null) return NotFound();
         return user;
     }
-    
+
     [HttpPost("add-photo")]
     public async Task<ActionResult<User>> AddPhoto(IFormFile file)
     {
@@ -63,9 +67,10 @@ public class UsersController : BaseController
         {
             return Created("", user);
         }
+
         return BadRequest("Problem adding photo");
     }
-    
+
     [HttpPost("codeforces-account/{handle}")]
     public async Task<IActionResult> AddCodeforcesAccount(string handle)
     {
@@ -80,13 +85,40 @@ public class UsersController : BaseController
         return Ok();
     }
 
+    [HttpGet("my-codeforces-submissions")]
+    public async Task<List<SubmissionDto>?> GetMySubmissions()
+    {
+        var userProfile = await Users.GetUserProfileAsync(User.GetUserId());
+        return await _codeforcesService.GetSubmissionsAsync(userProfile!.CodeforcesAccount!);
+    }
+
+    [HttpGet("codeforces-submissions/{handle}")]
+    public async Task<List<SubmissionDto>?> GetUserSubmissions(string handle) =>
+        await _codeforcesService.GetSubmissionsAsync(handle);
+
     [HttpPatch]
-    public async Task<ActionResult<UserDto?>> UpdateUser([FromBody]UserUpdateDto dto)
+    public async Task<ActionResult<UserDto?>> UpdateUser([FromBody] UserUpdateDto dto)
     {
         var user = await GetUser();
         _mapper.Map(dto, user);
         Users.Update(user);
         await Users.SaveChangesAsync();
         return await Users.GetUserProfileAsync(User.GetUserId());
+    }
+
+    [HttpGet("users-stats")]
+    public async Task<ActionResult<object>> UsersStats() => Ok(await _statisticsService.GetUsersStats());
+
+    [HttpGet("my-task-stats")]
+    public async Task<ActionResult<object>> MyStats()
+    {
+        int userId = User.GetUserId();
+        return Ok(await _statisticsService.GetUserTaskStats(userId));
+    }
+    
+    [HttpGet("user-task-stats/{id:int}")]
+    public async Task<ActionResult<object>> UserStats(int id)
+    {
+        return Ok(await _statisticsService.GetUserTaskStats(id));
     }
 }

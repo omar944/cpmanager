@@ -9,11 +9,11 @@ namespace API.Controllers;
 
 public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
 {
-
-    public TeamsController(IRepository<Team> repository, IMapper mapper, IUserRepository users) :
+    private readonly IStatisticsService _statisticsService;
+    public TeamsController(IRepository<Team> repository, IMapper mapper, IUserRepository users, IStatisticsService statisticsService) :
         base(repository, mapper, users)
     {
-
+        _statisticsService = statisticsService;
     }
     /// <summary>
     /// get teams of users with id equals @id
@@ -84,6 +84,5 @@ public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
         var res =  await Repository.GetProjectedById<TeamDto>(team.Id);
         return Ok(res);
     }
-    
-    
+
 }
