@@ -14,4 +14,6 @@ public interface IRepository<TEntity> where TEntity : BaseEntity
     public void Remove(TEntity entity);
     public void Update(TEntity entity);
     public Task<bool> SaveChangesAsync();
+    public void RemoveRange(IEnumerable<TEntity> entities);
+    public void AddRange(IEnumerable<TEntity> entities);
 }

@@ -5,99 +5,95 @@ using CodeforcesTool.Models;
 using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services;
 
 public class StatisticsService : IStatisticsService
 {
     private readonly IUserRepository _userRepository;
-    private readonly CodeforcesApiService _codeforcesApi;
+    private readonly ICodeforcesService _codeforcesService;
     private readonly IRepository<Team> _teamRepository;
-    private readonly IRepository<DailyTask> _taskRepository;
-    private readonly IRepository<CodeforcesAccount> _codeForcesAccountRepository;
+    private readonly IRepository<DailyTask> _tasks;
+    private readonly IMapper _mapper;
+    private readonly IRepository<Submission> _submissions;
 
-    public StatisticsService(IUserRepository userRepository, CodeforcesApiService codeforcesApi, IRepository<Team> teamRepository, IRepository<DailyTask> taskRepository, IRepository<CodeforcesAccount> codeForcesAccountRepository)
+    public StatisticsService(IUserRepository userRepository, ICodeforcesService codeforcesService,
+        IRepository<Team> teamRepository, IRepository<DailyTask> taskRepository, IMapper mapper,
+        IRepository<Submission> submissions)
     {
-        _codeforcesApi = codeforcesApi;
         _userRepository = userRepository;
         _teamRepository = teamRepository;
-        _taskRepository = taskRepository;
-        _codeForcesAccountRepository = codeForcesAccountRepository;
+        _tasks = taskRepository;
+        _mapper = mapper;
+        _submissions = submissions;
+        _codeforcesService = codeforcesService;
     }
 
-    public async Task<object> GetUsersStats()
+    public async Task<List<UserTaskStatsDto>?> GetUserTaskStats(int userId)
     {
-        // var usersQuery = _userRepository.GetQuery().AsNoTracking();
+        var user = await _userRepository.GetQuery().Include(u => u.CodeforcesAccount).
+            Include(u => u.TrainingGroups).FirstOrDefaultAsync(u=>u.Id==userId);
+        if (user?.CodeforcesAccount is null) return null;
+        if (await _codeforcesService.UpdateSubmissions(user) == false) return null;
+
+        var userGroups = user.TrainingGroups.Select(x => x.TrainingGroupId).ToList();
+
+        var tasks = await _tasks.GetQuery().Include(t => t.Group).Include(t => t.Problems).AsNoTracking()
+            .Where(t => userGroups.Contains(t.Group!.Id))
+            .ProjectTo<UserTaskStatsDto>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+        if (tasks.IsNullOrEmpty()) return null;
+        foreach (var p in tasks.SelectMany(taskStats => taskStats.Problems!))
+        {
+            p.Solved = await _submissions.GetQuery()
+                .AnyAsync(s => s.ProblemContestId == p.ContestId && s.ProblemIndex == p.Index);
+        }
+        return tasks;
+    }
+    
+    public async Task<UsersStatsDto> GetUsersStats()
+    {
         var users = _userRepository.GetQuery().AsNoTracking();
-        int totalUsersNum = users.Count();
-        float numberOfNewParticipants = users.Count(user => user.Participations!.Count == 0);
-        float maleUsers = users.Count(user => user.Gender!.Equals("male"));
-        float femaleUsers = totalUsersNum - maleUsers;
-        int numStudentsCurrentlyTraining = users.Count(user => user.TrainingGroups.Count > 0);
-        int teamsCount = _teamRepository.GetQuery().Count();
+        var totalUsersNum = await users.CountAsync();
+        var numberOfNewParticipants = users.Count(user => user.Participations!.Count == 0);
+        var maleUsers = users.Count(user => user.Gender!.Equals("male"));
+        var femaleUsers = totalUsersNum - maleUsers;
+        var numStudentsCurrentlyTraining = await users.CountAsync(user => user.TrainingGroups.Count > 0);
+        var teamsCount = await _teamRepository.GetQuery().CountAsync();
         
-        return new {
+        return new UsersStatsDto{
             Count = totalUsersNum, 
-            PercentageOfNewParticipants = numberOfNewParticipants/totalUsersNum,
-            PercentageOfMaleUsers = maleUsers/totalUsersNum,
-            PercentageOfFemaleUsers = femaleUsers/totalUsersNum,
+            PercentageOfNewParticipants = (float)numberOfNewParticipants/totalUsersNum,
+            PercentageOfMaleUsers = (float)maleUsers/totalUsersNum,
+            PercentageOfFemaleUsers = (float)femaleUsers/totalUsersNum,
             NumStudentsCurrentlyTraining = numStudentsCurrentlyTraining,
             NumOfTeams = teamsCount
         };
     }
-
-    public async Task<object> GetUserTaskStats(int userId)
-    {
-        var codeForcesAccount = await _codeForcesAccountRepository.GetQuery()
-            .Where(acc => acc.CodeforcesAccountForeignKey == userId).FirstOrDefaultAsync();
-        if (codeForcesAccount == null)
-        {
-            return new {Status = "ERROR", Message = "This user doesn't have a CodeForces account"};
-        }
-
-        var userProblems = await GetUserTaskProblems(userId);
-
-        float numOfAssignedProblems = userProblems.Count();
-        float numOfSolvedProblems = 0;
-        var userSubmissions = await _codeforcesApi.GetSubmissionsAsync(codeForcesAccount!.Handle!);
-        
-        foreach (var submission in userSubmissions!)
-        {
-            if (userProblems.Any(problem => problem.Name == submission.Problem!.Name) 
-                && submission!.Verdict!.Equals("OK"))
-            {
-                numOfSolvedProblems++;
-            }
-        }
-        
-        return new
-        {
-            PercentageOfSolvedTaskProblems = numOfAssignedProblems != 0 ? numOfSolvedProblems / numOfAssignedProblems : 0
-        };
-    }
-
-    private async Task<IEnumerable<Problem>> GetUserTaskProblems(int userId)
-    {
-        var user = await _userRepository.GetQuery()
-            .Include(u => u.TrainingGroups)
-            .ThenInclude(g=>g.TrainingGroup)
-            .Where(u => u.Id == userId)
-            .FirstOrDefaultAsync();
-        
-        var groups = user!.TrainingGroups?.Select(g=>g.TrainingGroup);
-
-        var tasks = await _taskRepository.GetQuery()
-            .Where(t => groups.Contains(t.Group) ) //&& t.Id == taskId
-            .ToListAsync();
-
-        List<Problem>? problems = new List<Problem>();
-        foreach (var task in tasks)
-        {
-            foreach (var prob in task.Problems!)
-            {
-                problems.Add(prob);
-            }
-        }
-        return problems;
-    }
+    
+    // private async Task<IEnumerable<Problem>> GetUserTaskProblems(int userId)
+    // {
+    //     var user = await _userRepository.GetQuery()
+    //         .Include(u => u.TrainingGroups)
+    //         .ThenInclude(g=>g.TrainingGroup)
+    //         .Where(u => u.Id == userId)
+    //         .FirstOrDefaultAsync();
+    //     
+    //     var groups = user!.TrainingGroups?.Select(g=>g.TrainingGroup);
+    //
+    //     var tasks = await _tasks.GetQuery()
+    //         .Where(t => groups.Contains(t.Group) ) //&& t.Id == taskId
+    //         .ToListAsync();
+    //
+    //     List<Problem>? problems = new List<Problem>();
+    //     foreach (var task in tasks)
+    //     {
+    //         foreach (var prob in task.Problems!)
+    //         {
+    //             problems.Add(prob);
+    //         }
+    //     }
+    //     return problems;
+    // }
 }

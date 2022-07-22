@@ -60,4 +60,14 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     {
         return await _context.SaveChangesAsync() > 0;
     }
+
+    public void RemoveRange(IEnumerable<TEntity> entities)
+    {
+        _context.RemoveRange(entities);
+    }
+
+    public void AddRange(IEnumerable<TEntity> entities)
+    {
+        _context.AddRange(entities);
+    }
 }

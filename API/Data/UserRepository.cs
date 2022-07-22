@@ -25,9 +25,11 @@ public class UserRepository : IUserRepository
         _users.Update(user);
     }
 
-    public async Task<User?> GetUserByIdAsync(int id)
+    public async Task<User?> GetUserByIdAsync(int id,bool withCodeforces=false)
     {
-        var ret = await _users.FindAsync(id);
+        var ret = withCodeforces? await _users.Include(x=>x.CodeforcesAccount)
+                .FirstOrDefaultAsync(x=>x.Id==id)
+                :await _users.FindAsync(id);
         return ret;
     }
 

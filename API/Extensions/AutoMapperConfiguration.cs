@@ -49,6 +49,7 @@ public class AutoMapperConfiguration : Profile
         CreateMap<Tag, string>().ConvertUsing(t=>t.Name!);
 
         CreateMap<DailyTask, DailyTaskDto>();
+        CreateMap<DailyTask, UserTaskStatsDto>();
 
         CreateMap<UserRole, string>().ConvertUsing(x=>x.Role.Name);
         

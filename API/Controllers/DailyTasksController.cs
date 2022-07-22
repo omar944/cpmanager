@@ -13,13 +13,15 @@ public class DailyTasksController:CrudController<DailyTaskCreateDto,DailyTaskDto
 {
     private readonly IRepository<Problem> _problems;
     private readonly IRepository<TrainingGroup> _groups;
+    private readonly IStatisticsService _statisticsService;
 
     public DailyTasksController(IRepository<DailyTask> repository, IMapper mapper, IUserRepository users,
-    IRepository<Problem> problems,IRepository<TrainingGroup>groups)
+    IRepository<Problem> problems,IRepository<TrainingGroup>groups,IStatisticsService statisticsService)
         : base(repository, mapper, users)
     {
         _problems = problems;
         _groups = groups;
+        _statisticsService = statisticsService;
     }
 
 
@@ -37,8 +39,14 @@ public class DailyTasksController:CrudController<DailyTaskCreateDto,DailyTaskDto
             .ProjectTo<DailyTaskDto>(Mapper.ConfigurationProvider).ToListAsync();
         return tasks;
     }
-    
-    
+
+    [HttpGet("my-stats")]
+    public async Task<ActionResult<List<UserTaskStatsDto>?>> GetCurrentUserStats()
+    {
+        return await _statisticsService.GetUserTaskStats(User.GetUserId());
+    }
+
+
     [HttpPost]
     public override async Task<ActionResult> Create([FromBody] DailyTaskCreateDto dto)
     {
@@ -56,7 +64,7 @@ public class DailyTasksController:CrudController<DailyTaskCreateDto,DailyTaskDto
         return Created("", Mapper.Map<DailyTaskDto>(await Repository.GetProjectedById<DailyTaskDto>(task.Id)));
     }
     
-    [HttpPut("{id:int}")]
+    //[HttpPut("{id:int}")]
     public override Task<ActionResult> Update(int id, [FromBody] DailyTaskCreateDto dto)
     {
         throw new NotImplementedException();

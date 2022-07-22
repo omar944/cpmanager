@@ -1,10 +1,11 @@
+using API.Models;
 using Entities.App;
 
 namespace API.Interfaces;
 
 public interface IStatisticsService
 {
-    Task<object> GetUsersStats();
+    Task<UsersStatsDto> GetUsersStats();
 
-    Task<object> GetUserTaskStats(int userId);
+    Task<List<UserTaskStatsDto>?> GetUserTaskStats(int userId);
 }

@@ -100,7 +100,9 @@ public static class Seed
     public static async Task SeedProblems(AppDbContext context, CodeforcesApiService apiService)
     {
         if (await context.Problems.AnyAsync()) return;
-        
+        //context.Problems.RemoveRange(context.Problems);
+        // context.Submissions.RemoveRange(context.Submissions);
+        await context.SaveChangesAsync();
         var tags = UsedTags.TagsUsed.Select(x => new Tag {Name = x}).ToList();
         context.Tags.AddRange(tags);
         await context.SaveChangesAsync();
@@ -108,6 +110,7 @@ public static class Seed
         var problems = await apiService.GetAllProblems();
         var problemsToAdd = problems?.
             Where(x => !x.Tags!.Contains("*special") && x.Tags.All(t=>UsedTags.TagsUsed.Contains(t)))
+            .OrderBy(x=>x.ContestId)
             .Take(500)
             .Select(x=>new Problem
             {

@@ -8,4 +8,5 @@ public class ProblemDto
     public List<string>? Tags { get; set; }
     public string? Index { get; set; }
     public int ContestId { get; set; }
+    public bool Solved { get; set; }
 }

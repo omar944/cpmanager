@@ -40,7 +40,7 @@ public class CodeforcesApiService
     public async Task<List<SubmissionDto>?> GetSubmissionsAsync(string username, int? limit = null)
     {
         var request = $"user.status?handle={username}";
-        if (limit is not null) request += $"&from=1&count={limit}";
+        if (limit is not null or > 0) request += $"&from=1&count={limit}";
         var res = await _httpClient.GetFromJsonAsync<CodeforcesApiResult<List<SubmissionDto>>>
             (request, _options);
         return res?.Result;

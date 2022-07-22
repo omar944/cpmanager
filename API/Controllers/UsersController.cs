@@ -1,10 +1,6 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using API.Extensions;
 using API.Interfaces;
 using API.Models;
-using API.Services;
 using CodeforcesTool.Models;
 using CodeforcesTool.Services;
 using Entities.App;
@@ -106,19 +102,7 @@ public class UsersController : BaseController
         return await Users.GetUserProfileAsync(User.GetUserId());
     }
 
-    [HttpGet("users-stats")]
-    public async Task<ActionResult<object>> UsersStats() => Ok(await _statisticsService.GetUsersStats());
-
-    [HttpGet("my-task-stats")]
-    public async Task<ActionResult<object>> MyStats()
-    {
-        int userId = User.GetUserId();
-        return Ok(await _statisticsService.GetUserTaskStats(userId));
-    }
-    
-    [HttpGet("user-task-stats/{id:int}")]
-    public async Task<ActionResult<object>> UserStats(int id)
-    {
-        return Ok(await _statisticsService.GetUserTaskStats(id));
-    }
+    [HttpGet("stats")]
+    public async Task<ActionResult<UsersStatsDto>> UsersStats() => 
+        Ok(await _statisticsService.GetUsersStats());
 }

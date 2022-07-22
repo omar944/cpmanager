@@ -19,8 +19,8 @@ public static class AppServiceExtensions
         services.AddScoped<IPhotoService, PhotoService>();
         
         services.AddScoped<ITokenService,TokenService>();
-
-        services.AddScoped<IStatisticsService, StatisticsService>();
+        
+        
 
         services.AddAutoMapper(typeof(AutoMapperConfiguration).Assembly);
 
@@ -30,6 +30,9 @@ public static class AppServiceExtensions
 
         services.AddScoped<IRecommendationService, RecommendationService>();
         
+        services.AddScoped<ICodeforcesService, CodeforcesService>();
+        
+        services.AddScoped<IStatisticsService, StatisticsService>();
         services.AddDbContext<AppDbContext>(options =>
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
