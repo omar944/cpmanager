@@ -162,11 +162,11 @@ public static class Seed
         , IMapper mapper,UserManager<User> userManager)
     {
         if (await context.CodeforceseAccounts.CountAsync() > 1) return;
-        // var users = await apiService.GetSyriaUsers();
-        var file = File.OpenText(@"D:\response.json").BaseStream;
-        var users = JsonSerializer
-            .Deserialize<CodeforcesApiResult<List<CodeforcesAccountDto>>>(file,
-                new JsonSerializerOptions {PropertyNameCaseInsensitive = true})?.Result;
+        var users = await apiService.GetSyriaUsers();
+        //var file = File.OpenText(@"D:\response.json").BaseStream;
+        // var users = JsonSerializer
+        //     .Deserialize<CodeforcesApiResult<List<CodeforcesAccountDto>>>(file,
+        //         new JsonSerializerOptions {PropertyNameCaseInsensitive = true})?.Result;
         if (users is null) return;
         var usersToAdd = users.Where(x => x.Country == "Syria" && x.Handle!="omar94").
             Select(mapper.Map<CodeforcesAccount>).Take(100).AsParallel().ToList();
