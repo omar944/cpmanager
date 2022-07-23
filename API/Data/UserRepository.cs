@@ -47,15 +47,16 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<UserDto>> GetFilteredUsersProfilesAsync(string q, bool? coachOnly)
     {
-        Console.WriteLine("-------------------------------------");
-        Console.WriteLine(q);
-        Console.WriteLine("-------------------------------------");
         var res = _userManager.Users.Include(x => x.UserRoles)
             .ThenInclude(r => r.Role).AsNoTracking()
             .Where(user => user.FullName!.Contains(q)).AsSplitQuery();
         if (coachOnly != null && coachOnly.Value)
         {
-            res = res.Where(user=>user.UserRoles.Select(x=>x.Role.Name).Contains("Coach")).AsSplitQuery();
+            res = res.Where(user=>user.UserRoles.Select(x=>x.Role.Name).Contains("Coach"));
+        }
+        else
+        {
+            res = res.Where(user=>user.UserRoles.Select(x=>x.Role.Name).Contains("Member"));
         }
 
         return await res.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
