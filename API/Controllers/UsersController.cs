@@ -32,10 +32,11 @@ public class UsersController : BaseController
         return Ok(res);
     }
 
-    [HttpGet("search/{searchQuery}")]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetFilteredUsers(string searchQuery)
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetFilteredUsers([FromQuery]string q,
+        [FromQuery]bool? coachOnly)
     {
-        var res = await Users.GetFilteredUsersProfilesAsync(searchQuery);
+        var res = await Users.GetFilteredUsersProfilesAsync(q,coachOnly);
         return Ok(res);
     }
 

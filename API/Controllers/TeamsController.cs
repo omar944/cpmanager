@@ -9,11 +9,9 @@ namespace API.Controllers;
 
 public class TeamsController:CrudController<TeamCreateDto,TeamDto,Team>
 {
-    private readonly IStatisticsService _statisticsService;
-    public TeamsController(IRepository<Team> repository, IMapper mapper, IUserRepository users, IStatisticsService statisticsService) :
+    public TeamsController(IRepository<Team> repository, IMapper mapper, IUserRepository users) :
         base(repository, mapper, users)
     {
-        _statisticsService = statisticsService;
     }
     /// <summary>
     /// get teams of users with id equals @id
