@@ -44,7 +44,7 @@ try
     await Seed.SeedUsers(userManager, roleManager, dbContext, apiService, mapper);
     await Seed.SeedProblems(dbContext, apiService);
     await Seed.SeedSubmissions(dbContext, apiService);
-    await Seed.SeedCodeforcesUsers(dbContext, apiService, mapper);
+    await Seed.SeedCodeforcesUsers(dbContext, apiService, mapper, userManager);
 }
 catch (Exception e)
 {

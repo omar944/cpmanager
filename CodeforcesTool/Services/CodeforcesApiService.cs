@@ -49,10 +49,8 @@ public class CodeforcesApiService
     public async Task<List<CodeforcesAccountDto>?> GetSyriaUsers()
     {
         const string request = "https://codeforces.com/api/user.ratedList?activeOnly=true&includeRetired=false";
-        var stream = await _httpClient
-            .GetStreamAsync(request);
-        var res= await JsonSerializer.
-            DeserializeAsync<CodeforcesApiResult<List<CodeforcesAccountDto>>>(stream, _options);
+        var res = await _httpClient
+            .GetFromJsonAsync<CodeforcesApiResult<List<CodeforcesAccountDto>>>(request,_options);
         return res?.Result;
     }
 }

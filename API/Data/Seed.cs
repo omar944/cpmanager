@@ -1,6 +1,12 @@
-﻿using CodeforcesTool.Services;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
+using CodeforcesTool.Models;
+using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+
 #pragma warning disable CS8601
 
 namespace API.Data;
@@ -25,14 +31,14 @@ public static class Seed
         }
 
         await context.SaveChangesAsync();
-        var account = await apiService.GetUserAsync("omar94");
+        //var account = await apiService.GetUserAsync("omar94");
         
         var users = new List<User>()
         {
             new()
             {
                 FullName = "omar", UserName = "omar", Email = "omar@mail.com",
-                CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)
+                //CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)
             },
             new() {FullName = "ahmad", UserName = "ahmad", Email = "ahmad@mail.com"},
             new() {FullName = "ali", UserName = "ali", Email = "ali@mail.com"},
@@ -153,16 +159,41 @@ public static class Seed
     }
 
     public static async Task SeedCodeforcesUsers(AppDbContext context, CodeforcesApiService apiService
-        , IMapper mapper)
+        , IMapper mapper,UserManager<User> userManager)
     {
         if (await context.CodeforceseAccounts.CountAsync() > 1) return;
-        var users = await apiService.GetSyriaUsers();
+        // var users = await apiService.GetSyriaUsers();
+        var file = File.OpenText(@"D:\response.json").BaseStream;
+        var users = JsonSerializer
+            .Deserialize<CodeforcesApiResult<List<CodeforcesAccountDto>>>(file,
+                new JsonSerializerOptions {PropertyNameCaseInsensitive = true})?.Result;
         if (users is null) return;
-        var usersToAdd = users.Where(x => x.Country == "Syria").
-            Select(mapper.Map<CodeforcesAccount>).Take(100).AsParallel();
+        var usersToAdd = users.Where(x => x.Country == "Syria" && x.Handle!="omar94").
+            Select(mapper.Map<CodeforcesAccount>).Take(100).AsParallel().ToList();
 
         await context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
         await context.SaveChangesAsync();
+        usersToAdd = await context.CodeforceseAccounts.ToListAsync();
+        var accounts = usersToAdd.Select(x => new User
+        {
+            FullName = x.FirstName is not null ? x.FirstName + " " + x.LastName : x.Handle,
+            Email = x.Handle + "@mail.com",
+            UserName = x.Handle
+        });
+        foreach (var user in accounts)
+        {
+            user.Email = user.Email.ToLower();
+            await userManager.CreateAsync(user, "123.com.net");
+            await userManager.AddToRoleAsync(user, "Member");
+        }
+        await context.SaveChangesAsync();
+        var accountsAdded = await userManager.Users.ToListAsync();
+        foreach (var user in accountsAdded)
+        {
+            user.CodeforcesAccount =
+                await context.CodeforceseAccounts.FirstOrDefaultAsync(x => x.Handle == user.UserName);
+        }
 
+        await context.SaveChangesAsync();
     }
 }

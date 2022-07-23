@@ -35,8 +35,7 @@ public class StatisticsService : IStatisticsService
         var user = await _userRepository.GetQuery().Include(u => u.CodeforcesAccount).
             Include(u => u.TrainingGroups).FirstOrDefaultAsync(u=>u.Id==userId);
         if (user?.CodeforcesAccount is null) return null;
-        if (await _codeforcesService.UpdateSubmissions(user) == false) return null;
-
+        await _codeforcesService.UpdateSubmissions(user);
         var userGroups = user.TrainingGroups.Select(x => x.TrainingGroupId).ToList();
 
         var tasks = await _tasks.GetQuery().Include(t => t.Group).Include(t => t.Problems).AsNoTracking()

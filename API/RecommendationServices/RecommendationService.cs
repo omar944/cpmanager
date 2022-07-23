@@ -37,4 +37,11 @@ public class RecommendationService : IRecommendationService
             .Take(5).AsParallel();
         return _mapper.Map<List<ProblemDto>>(problems);
     }
+
+    public async Task<List<UserDto>> GetSimilarUsers(int userId)
+    {
+        var user = await _users.GetUserByIdAsync(userId,true);
+        
+        return new List<UserDto>();
+    }
 }
