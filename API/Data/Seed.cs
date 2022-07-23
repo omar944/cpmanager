@@ -1,11 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
-using CodeforcesTool.Models;
-using CodeforcesTool.Services;
+﻿using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 #pragma warning disable CS8601
 
