@@ -27,7 +27,7 @@ public class CodeforcesService : ICodeforcesService
         var currentSubmissions = await _submissions.GetQuery().Where(x => x.Author == user).ToListAsync();
 
         var problems = await _problems.GetQuery().ToListAsync();
-        var limit = (await _submissions.GetQuery().AnyAsync(x => x.Author == user))?50:-1;
+        var limit = (await _submissions.GetQuery().AnyAsync(x => x.Author == user))?50:1000000;
         var submissions = await _apiService.GetSubmissionsAsync(handle,limit);
         var submissionsToAdd = submissions?
             .Where(x => x.Verdict == "OK" && !x.Problem!.Tags!.Contains("*special")

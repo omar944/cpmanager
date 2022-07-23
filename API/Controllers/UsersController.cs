@@ -82,16 +82,16 @@ public class UsersController : BaseController
         return Ok();
     }
 
-    [HttpGet("my-codeforces-submissions")]
-    public async Task<List<SubmissionDto>?> GetMySubmissions()
-    {
-        var userProfile = await Users.GetUserProfileAsync(User.GetUserId());
-        return await _codeforcesService.GetSubmissionsAsync(userProfile!.CodeforcesAccount!);
-    }
+    // [HttpGet("my-codeforces-submissions")]
+    // public async Task<List<SubmissionDto>?> GetMySubmissions()
+    // {
+        // var userProfile = await Users.GetUserProfileAsync(User.GetUserId());
+        // return await _codeforcesService.GetSubmissionsAsync(userProfile!.CodeforcesAccount!);
+    // }
 
-    [HttpGet("codeforces-submissions/{handle}")]
-    public async Task<List<SubmissionDto>?> GetUserSubmissions(string handle) =>
-        await _codeforcesService.GetSubmissionsAsync(handle);
+    // [HttpGet("codeforces-submissions/{handle}")]
+    // public async Task<List<SubmissionDto>?> GetUserSubmissions(string handle) =>
+    //     await _codeforcesService.GetSubmissionsAsync(handle);
 
     [HttpPatch]
     public async Task<ActionResult<UserDto?>> UpdateUser([FromBody] UserUpdateDto dto)
