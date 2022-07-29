@@ -1,6 +1,8 @@
 using API.Extensions;
+using API.Helpers.Pagination;
 using API.Interfaces;
 using API.Models;
+using API.Models.Parameters;
 using CodeforcesTool.Models;
 using CodeforcesTool.Services;
 using Entities.App;
@@ -26,9 +28,11 @@ public class UsersController : BaseController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+    public async Task<ActionResult<PagedList<UserDto>>> GetUsers([FromQuery] UserParameters userParams)
     {
-        var res = await Users.GetUsersProfilesAsync();
+        var res = await Users.GetUsersProfilesAsync(userParams);
+        Response.AddPaginationHeader(res.CurrentPage, res.PageSize,
+                                     res.TotalCount, res.TotalPages);
         return Ok(res);
     }
 

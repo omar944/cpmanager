@@ -1,5 +1,7 @@
-﻿using API.Interfaces;
+﻿using API.Helpers.Pagination;
+using API.Interfaces;
 using API.Models;
+using API.Models.Parameters;
 using AutoMapper.QueryableExtensions;
 using Entities.App;
 
@@ -38,11 +40,22 @@ public class UserRepository : IUserRepository
         return await _users.SingleOrDefaultAsync(x => x.UserName == username);
     }
 
-    public async Task<IEnumerable<UserDto>> GetUsersProfilesAsync()
+    public async Task<PagedList<UserDto>> GetUsersProfilesAsync(UserParameters userParams)
     {
-        return await _userManager.Users.Include(x=>x.UserRoles).ThenInclude(r=>r.Role).AsNoTracking().AsSplitQuery()
-            .ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
-        //return await _users.ProjectTo<UserDto>(_mapper.ConfigurationProvider).ToListAsync();
+        var query =  _userManager.Users.Include(x=>x.UserRoles).ThenInclude(r=>r.Role).AsNoTracking().AsSplitQuery();
+
+        string requiredRole = userParams.CoachesOnly ? "Coach" : "Member";
+        query = query.Where(user => user.UserRoles.Select(x=>x.Role.Name).Contains(requiredRole));
+
+        if (userParams.NotInATeam)
+        {
+            query = query.Where(user => user.Teams == null || user.Teams.Count == 0);
+        }
+
+        var result = query.ProjectTo<UserDto>(_mapper.ConfigurationProvider);
+
+        return await PagedList<UserDto>.CreateAsync(result,
+                        userParams.PageNumber, userParams.PageSize);
     }
 
     public async Task<IEnumerable<UserDto>> GetFilteredUsersProfilesAsync(string q, bool? coachOnly)
