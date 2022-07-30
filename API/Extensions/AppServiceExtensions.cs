@@ -73,7 +73,6 @@ public static class AppServiceExtensions
 
 
         services.AddHttpClient<CodeforcesApiService>();
-
         return services;
     }
 }

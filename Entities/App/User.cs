@@ -1,4 +1,5 @@
-﻿using Entities.Codeforces;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Entities.Codeforces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,8 @@ public class User : IdentityUser<int>
     public ICollection<UserRole> UserRoles { get; set; } = null!;
     public ICollection<Submission>? Submissions { get; set; }
 
+    public double ProblemsAvg { get; set; } = -1;
+    
     public bool GetIsCoach()
     {
         return UserRoles.Select(x=>x.Role).Any(r=>r.Name=="Coach");

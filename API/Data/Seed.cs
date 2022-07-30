@@ -1,4 +1,6 @@
-﻿using CodeforcesTool.Services;
+﻿using API.Controllers;
+using API.Interfaces;
+using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
 
@@ -6,12 +8,43 @@ using Entities.Codeforces;
 
 namespace API.Data;
 
-public static class Seed
+public class Seed:BaseController
 {
-    public static async Task SeedUsers(UserManager<User> userManager, RoleManager<Role> roleManager,
-        AppDbContext context, CodeforcesApiService apiService, IMapper mapper)
+    private readonly UserManager<User> _userManager;
+    private readonly RoleManager<Role> _roleManager;
+    private readonly AppDbContext _context;
+    private readonly CodeforcesApiService _apiService;
+    private readonly IMapper _mapper;
+    
+    public Seed(IUserRepository users,UserManager<User> userManager,RoleManager<Role> roleManager
+    ,AppDbContext context,CodeforcesApiService apiService,IMapper mapper) 
+        : base(users)
     {
-        if (await userManager.Users.AnyAsync()) return;
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _context = context;
+        _apiService = apiService;
+        _mapper = mapper;
+    }
+    
+    [HttpGet]
+    public async Task<ActionResult> StartAsync()
+    {
+        _ = StartSeed();
+        return Ok();
+    }
+
+    private async Task StartSeed()
+    {
+        await SeedUsers();
+        await SeedCodeforcesUsers();
+        await SeedProblems();
+        await SeedSubmissions();
+    }
+    
+    private async Task SeedUsers()
+    {
+        if (await _userManager.Users.AnyAsync()) return;
 
         var roles = new List<Role>
         {
@@ -22,29 +55,28 @@ public static class Seed
 
         foreach (var role in roles)
         {
-            await roleManager.CreateAsync(role);
+            await _roleManager.CreateAsync(role);
         }
 
-        await context.SaveChangesAsync();
-        //var account = await apiService.GetUserAsync("omar94");
+        await _context.SaveChangesAsync();
+        var account = await _apiService.GetUserAsync("omar94");
         
         var users = new List<User>()
         {
             new()
             {
                 FullName = "omar", UserName = "omar", Email = "omar@mail.com",
-                //CodeforcesAccount = mapper.Map<CodeforcesAccount>(account)
+                CodeforcesAccount = _mapper.Map<CodeforcesAccount>(account)
             },
             new() {FullName = "ahmad", UserName = "ahmad", Email = "ahmad@mail.com"},
             new() {FullName = "ali", UserName = "ali", Email = "ali@mail.com"},
             new() {FullName = "yahya", UserName = "yahya", Email = "yahya@mail.com"},
         };
-
         foreach (var user in users)
         {
             user.Email = user.Email.ToLower();
-            await userManager.CreateAsync(user, "123.com.net");
-            await userManager.AddToRoleAsync(user, "Member");
+            await _userManager.CreateAsync(user, "123.com.net");
+            await _userManager.AddToRoleAsync(user, "Member");
         }
 
         var admin = new User
@@ -52,23 +84,23 @@ public static class Seed
             UserName = "admin",
             Email = "admin@mail.com"
         };
-        await userManager.CreateAsync(admin, "123.com.net");
-        await userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
-        await context.SaveChangesAsync();
-        
+        await _userManager.CreateAsync(admin, "123.com.net");
+        await _userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
+        await _context.SaveChangesAsync();
+
         var team = new Team
         {
             Name = "team1",
-            Coach = await context.Users.FindAsync(1),
+            Coach = await _context.Users.FindAsync(1),
         };
-        var members = await context.Users.Where(x => x.UserName != "admin").ToListAsync();
+        var members = await _context.Users.Where(x => x.UserName != "admin").ToListAsync();
         var membersToAdd = members.Select(x=>new TeamUser
         {
             User = x,
             Team=team
         }).ToList();
         team.Members = membersToAdd;
-        await context.Teams.AddAsync(team);
+        await _context.Teams.AddAsync(team);
         
         var participation = new Participation
         {
@@ -77,38 +109,39 @@ public static class Seed
             Name = "ICPC 2020",
             Year = "2020",
             TeamName = "Red Panda",
-            User = await context.Users.FindAsync(1)
+            User = await _context.Users.FindAsync(1)
         };
-        await context.Participations.AddAsync(participation);
+        await _context.Participations.AddAsync(participation);
 
         var group = new TrainingGroup
         {
             Name = "advanced",
-            Coach = await context.Users.FindAsync(1),
+            Coach = await _context.Users.FindAsync(1),
         };
-        await context.TrainingGroups.AddAsync(group);
-        await context.SaveChangesAsync();
-        group = await context.TrainingGroups.FindAsync(1);
+        await _context.TrainingGroups.AddAsync(group);
+        await _context.SaveChangesAsync();
+        group = await _context.TrainingGroups.FindAsync(1);
         var trainees = new List<TrainingGroupUser>
         {
-            new() {TrainingGroup = group, User = await context.Users.FindAsync(2)},
-            new() {TrainingGroup = group, User = await context.Users.FindAsync(3)},
-            new() {TrainingGroup = group, User = await context.Users.FindAsync(1)}
+            new() {TrainingGroup = group, User = await _context.Users.FindAsync(2)},
+            new() {TrainingGroup = group, User = await _context.Users.FindAsync(3)},
+            new() {TrainingGroup = group, User = await _context.Users.FindAsync(1)}
         };
         group!.Students = trainees;
+        await _context.SaveChangesAsync();
     }
     
-    public static async Task SeedProblems(AppDbContext context, CodeforcesApiService apiService)
+    private async Task SeedProblems()
     {
-        if (await context.Problems.AnyAsync()) return;
-        //context.Problems.RemoveRange(context.Problems);
+        if (await _context.Problems.AnyAsync()) return;
+        // context.Problems.RemoveRange(context.Problems);
         // context.Submissions.RemoveRange(context.Submissions);
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         var tags = UsedTags.TagsUsed.Select(x => new Tag {Name = x}).ToList();
-        context.Tags.AddRange(tags);
-        await context.SaveChangesAsync();
+        _context.Tags.AddRange(tags);
+        await _context.SaveChangesAsync();
         
-        var problems = await apiService.GetAllProblems();
+        var problems = await _apiService.GetAllProblems();
         var problemsToAdd = problems?.
             Where(x => !x.Tags!.Contains("*special") && x.Tags.All(t=>UsedTags.TagsUsed.Contains(t)))
             .OrderBy(x=>x.ContestId)
@@ -119,56 +152,52 @@ public static class Seed
                 ContestId=x.ContestId,
                 Index=x.Index,
                 Rating=x.Rating,
-                Tags = context.Tags.Where(t=>x.Tags!.Contains(t.Name!)).ToList()
+                Tags = _context.Tags.Where(t=>x.Tags!.Contains(t.Name!)).ToList()
             }).AsParallel();
         
-        await context.Problems.AddRangeAsync(problemsToAdd!);
-        await context.SaveChangesAsync();
+        await _context.Problems.AddRangeAsync(problemsToAdd!);
+        await _context.SaveChangesAsync();
     }
 
-    public static async Task SeedSubmissions(AppDbContext context, CodeforcesApiService apiService)
+    private async Task SeedSubmissions()
     {
-        if (await context.Submissions.AnyAsync()) return;
-        var problems = await context.Problems.ToListAsync();
-        var author = await context.Users.FindAsync(1);
-
-        var users = new List<string> {"omar94"};
-
+        //var problems = await context.Problems.ToListAsync();
+        var users = _context.Users.Include(u => u.CodeforcesAccount).ToList();
         foreach (var user in users)
         {
-            var submissions = await apiService.GetSubmissionsAsync(user);
+            if (await _context.Submissions.AnyAsync(x => x.Author == user)) continue;
+            if (user.CodeforcesAccount?.Handle==null) continue;
+            var submissions = await _apiService.GetSubmissionsAsync(user.CodeforcesAccount.Handle);
             var submissionsToAdd = submissions?
                 .Where(x => x.Verdict == "OK" && !x.Problem!.Tags!.Contains("*special")
                                               && x.Problem.Tags.All(t => UsedTags.TagsUsed.Contains(t))
-                                              && problems.Any(p =>
+                                              && _context.Problems.Any(p =>
                                                   p.Index == x.Problem.Index && p.ContestId == x.Problem.ContestId))
                 .Select(s => new Submission
                 {
-                    Author = author,
-                    Problem = context.Problems.Find(s.Problem?.ContestId, s.Problem?.Index),
+                    Author = user,
+                    Problem = _context.Problems.Find(s.Problem?.ContestId, s.Problem?.Index),
                     Verdict = "OK"
-                }).AsParallel();
-            await context.AddRangeAsync(submissionsToAdd!);
-            await context.SaveChangesAsync();
+                }).AsParallel().ToList();
+            if(submissionsToAdd==null || submissionsToAdd.Count==0)continue;
+            user.ProblemsAvg = submissionsToAdd.Select(x => x.Problem!.Rating).ToList().Average();
+            await _context.AddRangeAsync(submissionsToAdd);
+            await _context.SaveChangesAsync();
         }
     }
 
-    public static async Task SeedCodeforcesUsers(AppDbContext context, CodeforcesApiService apiService
-        , IMapper mapper,UserManager<User> userManager)
+    private async Task SeedCodeforcesUsers()
     {
-        if (await context.CodeforceseAccounts.CountAsync() > 1) return;
-        var users = await apiService.GetSyriaUsers();
-        //var file = File.OpenText(@"D:\response.json").BaseStream;
-        // var users = JsonSerializer
-        //     .Deserialize<CodeforcesApiResult<List<CodeforcesAccountDto>>>(file,
-        //         new JsonSerializerOptions {PropertyNameCaseInsensitive = true})?.Result;
+        if (await _context.CodeforceseAccounts.CountAsync() > 1) return;
+        var users = await _apiService.GetSyriaUsers();
         if (users is null) return;
-        var usersToAdd = users.Where(x => x.Country == "Syria" && x.Handle!="omar94").
-            Select(mapper.Map<CodeforcesAccount>).Take(100).AsParallel().ToList();
+        var usersToAdd = users.Where(x => x.Country == "Syria").
+            Where(x=>x.Handle!="omar94").
+            Select(_mapper.Map<CodeforcesAccount>).Take(100).AsParallel().ToList();
 
-        await context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
-        await context.SaveChangesAsync();
-        usersToAdd = await context.CodeforceseAccounts.ToListAsync();
+        await _context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
+        await _context.SaveChangesAsync();
+        usersToAdd = await _context.CodeforceseAccounts.ToListAsync();
         var accounts = usersToAdd.Select(x => new User
         {
             FullName = x.FirstName is not null ? x.FirstName + " " + x.LastName : x.Handle,
@@ -178,17 +207,17 @@ public static class Seed
         foreach (var user in accounts)
         {
             user.Email = user.Email.ToLower();
-            await userManager.CreateAsync(user, "123.com.net");
-            await userManager.AddToRoleAsync(user, "Member");
+            await _userManager.CreateAsync(user, "123.com.net");
+            await _userManager.AddToRoleAsync(user, "Member");
         }
-        await context.SaveChangesAsync();
-        var accountsAdded = await userManager.Users.ToListAsync();
+        await _context.SaveChangesAsync();
+        var accountsAdded = await _userManager.Users.ToListAsync();
         foreach (var user in accountsAdded)
         {
             user.CodeforcesAccount =
-                await context.CodeforceseAccounts.FirstOrDefaultAsync(x => x.Handle == user.UserName);
+                await _context.CodeforceseAccounts.FirstOrDefaultAsync(x => x.Handle == user.UserName);
         }
-
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 }

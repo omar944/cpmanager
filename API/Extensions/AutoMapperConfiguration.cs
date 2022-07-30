@@ -41,6 +41,7 @@ public class AutoMapperConfiguration : Profile
 
         CreateMap<User, int>().ConvertUsing(u => u.Id);
         CreateMap<User, string>().ConvertUsing(u => u.UserName);
+        CreateMap<User, SimilarUserDto>();
         CreateMap<CodeforcesAccount, string>().ConvertUsing(u => u.Handle!);
 
         CreateMap<CodeforcesAccountDto, CodeforcesAccount>();

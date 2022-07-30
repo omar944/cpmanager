@@ -14,9 +14,15 @@ public class RecommendationController : BaseController
         _service = service;
     }
     
-    [HttpGet]
+    [HttpGet("problems")]
     public async Task<ActionResult<IEnumerable<ProblemDto>>> GetProblems()
     {
         return await _service.GetUserProblems(User.GetUserId());
+    }
+
+    [HttpGet("users")]
+    public async Task<ActionResult<IEnumerable<SimilarUserDto>>> GetSimilarUsers()
+    {
+        return await _service.GetSimilarUsers(User.GetUserId());
     }
 }

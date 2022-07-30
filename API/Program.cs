@@ -12,7 +12,6 @@ builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddCors();
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,16 +34,7 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<AppDbContext>();
-    var userManager = services.GetRequiredService<UserManager<User>>();
-    var roleManager = services.GetRequiredService<RoleManager<Role>>();
-    var dbContext = services.GetRequiredService<AppDbContext>();
-    var apiService = services.GetRequiredService<CodeforcesApiService>();
-    var mapper = services.GetRequiredService<IMapper>();
     await context.Database.MigrateAsync();
-    await Seed.SeedUsers(userManager, roleManager, dbContext, apiService, mapper);
-    await Seed.SeedProblems(dbContext, apiService);
-    await Seed.SeedSubmissions(dbContext, apiService);
-    await Seed.SeedCodeforcesUsers(dbContext, apiService, mapper, userManager);
 }
 catch (Exception e)
 {
