@@ -93,7 +93,8 @@ public class Seed:BaseController
             Name = "team1",
             Coach = await _context.Users.FindAsync(1),
         };
-        var members = await _context.Users.Where(x => x.UserName != "admin").ToListAsync();
+        var members = await _context.Users.Where(x => x.UserName != "admin")
+            .Where(x => x.UserName != "omar").ToListAsync();
         var membersToAdd = members.Select(x=>new TeamUser
         {
             User = x,

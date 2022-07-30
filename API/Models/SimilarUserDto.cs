@@ -7,4 +7,5 @@ public class SimilarUserDto
     public string? CodeforcesAccount { get; set; }
     public double ProblemsAvg { get; set; }
     public string? Email { get; set; }
+    public string? ProfilePhoto { get; set; }
 }

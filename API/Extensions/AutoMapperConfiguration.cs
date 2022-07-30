@@ -37,8 +37,9 @@ public class AutoMapperConfiguration : Profile
             .ForMember(x=>x.Id,opt=>opt.MapFrom(src=>src.User!.Id));
         // CreateMap<TrainingGroup, TrainingGroupStudentDto>();
         
+        
         CreateMap<TeamUser, int>().ConvertUsing(u => u.UserId);
-
+        
         CreateMap<User, int>().ConvertUsing(u => u.Id);
         CreateMap<User, string>().ConvertUsing(u => u.UserName);
         CreateMap<User, SimilarUserDto>();
@@ -53,9 +54,10 @@ public class AutoMapperConfiguration : Profile
         CreateMap<DailyTask, UserTaskStatsDto>();
 
         CreateMap<UserRole, string>().ConvertUsing(x=>x.Role.Name);
-        
-        CreateMap<TeamUser,TeamDto>().IncludeMembers(u=>u.Team);
-        CreateMap<TeamUser,TeamUserDto>().IncludeMembers(u=>u.User);
+
+        CreateMap<TeamUser, TeamDto>().IncludeMembers(u => u.Team);
+        CreateMap<TeamUser,TeamUserDto>().IncludeMembers(u=>u.User)
+            .ForMember(x=>x.Id,opt=>opt.MapFrom(src=>src.UserId));
 
         CreateMap<ParticipationCreateDto, Participation>();
         CreateMap<Participation,ParticipationDto>();
