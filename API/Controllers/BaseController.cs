@@ -19,9 +19,9 @@ public abstract class BaseController : ControllerBase
 
     [ApiExplorerSettings(IgnoreApi = true)]
     
-    protected async Task<User> GetUser()
+    protected async Task<User> GetUser(bool withCodeforces=false)
     {
-        var user = await Users.GetUserByIdAsync(User.GetUserId());
+        var user = await Users.GetUserByIdAsync(User.GetUserId(),withCodeforces);
         return user!;
     }
 }

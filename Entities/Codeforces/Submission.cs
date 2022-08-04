@@ -11,5 +11,5 @@ public class Submission : BaseEntity
     public int ProblemContestId { get; set; }
     public User? Author { get; set; }
     public int UserId { get; set; }
-    
+    public int CreationTimeSeconds { get; set; }
 }

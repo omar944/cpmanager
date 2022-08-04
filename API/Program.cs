@@ -1,7 +1,5 @@
 using API.Data;
 using API.Extensions;
-using CodeforcesTool.Services;
-using Entities.App;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +9,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddCors();
+builder.Services.AddHostedService<SeedService>();
 
 var app = builder.Build();
 

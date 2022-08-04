@@ -6,6 +6,7 @@ public class SubmissionDto
     public Author? Author { get; set; }
     public string? ProgrammingLanguage { get; set; }
     public string? Verdict { get; set; }
+    public int CreationTimeSeconds { get; set; }
 }
 
 public class Author

@@ -3,6 +3,8 @@ using API.Helpers.Pagination;
 using API.Interfaces;
 using API.Models;
 using API.Models.Parameters;
+using API.Services;
+using AutoMapper.QueryableExtensions;
 using CodeforcesTool.Models;
 using CodeforcesTool.Services;
 using Entities.App;
@@ -14,17 +16,22 @@ public class UsersController : BaseController
 {
     private readonly IMapper _mapper;
     private readonly IPhotoService _photoService;
-    private readonly CodeforcesApiService _codeforcesService;
+    private readonly CodeforcesApiService _codeforcesApiService;
     private readonly IStatisticsService _statisticsService;
+    private readonly ICodeforcesService _codeforcesService;
+    private readonly IRepository<Submission> _submissions;
 
-    public UsersController(IUserRepository repository, IMapper mapper, CodeforcesApiService codeforcesService,
-        IPhotoService photoService, IStatisticsService statisticsService) :
+    public UsersController(IUserRepository repository, IMapper mapper, CodeforcesApiService codeforcesApiService,
+        IPhotoService photoService, IStatisticsService statisticsService, ICodeforcesService codeforcesService,
+        IRepository<Submission> submissions) :
         base(repository)
     {
         _mapper = mapper;
-        _codeforcesService = codeforcesService;
+        _codeforcesApiService = codeforcesApiService;
         _photoService = photoService;
         _statisticsService = statisticsService;
+        _codeforcesService = codeforcesService;
+        _submissions = submissions;
     }
 
     [HttpGet]
@@ -75,7 +82,7 @@ public class UsersController : BaseController
     [HttpPost("codeforces-account/{handle}")]
     public async Task<IActionResult> AddCodeforcesAccount(string handle)
     {
-        var account = await _codeforcesService.GetUserAsync(handle);
+        var account = await _codeforcesApiService.GetUserAsync(handle);
         if (account is null) return NotFound(new {message = "no such handle"});
 
         var user = await GetUser();
@@ -86,16 +93,22 @@ public class UsersController : BaseController
         return Ok();
     }
 
-    // [HttpGet("my-codeforces-submissions")]
-    // public async Task<List<SubmissionDto>?> GetMySubmissions()
-    // {
-        // var userProfile = await Users.GetUserProfileAsync(User.GetUserId());
-        // return await _codeforcesService.GetSubmissionsAsync(userProfile!.CodeforcesAccount!);
-    // }
+    [HttpGet("{id:int}/latest-submissions")]
+    public async Task<ActionResult<List<ProblemDto>?>> GetMySubmissions(int id)
+    {
+        var user = await Users.GetUserByIdAsync(id, true);
+        if (user?.CodeforcesAccount?.Handle is null) return BadRequest("user don't have codeforces account");
+        await _codeforcesService.UpdateSubmissions(user);
+        var res = await _submissions.GetQuery()
+            .Where(x=>x.UserId==id)
+            .Include(s=>s.Problem)
+            .OrderByDescending(x => x.CreationTimeSeconds).Take(10)
+            .Select(s=>s.Problem).ProjectTo<ProblemDto>(_mapper.ConfigurationProvider).ToListAsync();
 
-    // [HttpGet("codeforces-submissions/{handle}")]
-    // public async Task<List<SubmissionDto>?> GetUserSubmissions(string handle) =>
-    //     await _codeforcesService.GetSubmissionsAsync(handle);
+        res.ForEach(x => x.Solved = true);
+        return res;
+    }
+
 
     [HttpPatch]
     public async Task<ActionResult<UserDto?>> UpdateUser([FromBody] UserUpdateDto dto)

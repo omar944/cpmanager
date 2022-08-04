@@ -1,14 +1,10 @@
-﻿using API.Controllers;
-using API.Interfaces;
-using CodeforcesTool.Services;
+﻿using CodeforcesTool.Services;
 using Entities.App;
 using Entities.Codeforces;
 
-#pragma warning disable CS8601
-
 namespace API.Data;
 
-public class Seed:BaseController
+public class SeedService : IHostedService
 {
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<Role> _roleManager;
@@ -16,23 +12,22 @@ public class Seed:BaseController
     private readonly CodeforcesApiService _apiService;
     private readonly IMapper _mapper;
     
-    public Seed(IUserRepository users,UserManager<User> userManager,RoleManager<Role> roleManager
-    ,AppDbContext context,CodeforcesApiService apiService,IMapper mapper) 
-        : base(users)
+    public SeedService(IServiceProvider serviceProvider)
     {
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _context = context;
-        _apiService = apiService;
-        _mapper = mapper;
+        var provider = serviceProvider.CreateScope().ServiceProvider;
+        _userManager = provider.GetService<UserManager<User>>()!;
+        _roleManager = provider.GetService<RoleManager<Role>>()!;
+        _context = provider.GetService<AppDbContext>()!;
+        _apiService = provider.GetService<CodeforcesApiService>()!;
+        _mapper = provider.GetService<IMapper>()!;
     }
     
-    [HttpGet]
-    public async Task<ActionResult> StartAsync()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         _ = StartSeed();
-        return Ok();
+        return Task.CompletedTask;
     }
+
 
     private async Task StartSeed()
     {
@@ -79,13 +74,13 @@ public class Seed:BaseController
             await _userManager.AddToRoleAsync(user, "Member");
         }
 
-        var admin = new User
-        {
-            UserName = "admin",
-            Email = "admin@mail.com"
-        };
-        await _userManager.CreateAsync(admin, "123.com.net");
-        await _userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
+        // var admin = new User
+        // {
+        //     UserName = "admin",
+        //     Email = "admin@mail.com"
+        // };
+        // await _userManager.CreateAsync(admin, "123.com.net");
+        // await _userManager.AddToRolesAsync(admin, new[] {"Admin", "Coach"});
         await _context.SaveChangesAsync();
 
         var team = new Team
@@ -163,7 +158,7 @@ public class Seed:BaseController
     private async Task SeedSubmissions()
     {
         //var problems = await context.Problems.ToListAsync();
-        var users = _context.Users.Include(u => u.CodeforcesAccount).ToList();
+        var users = await _context.Users.Include(u => u.CodeforcesAccount).ToListAsync();
         foreach (var user in users)
         {
             if (await _context.Submissions.AnyAsync(x => x.Author == user)) continue;
@@ -174,11 +169,12 @@ public class Seed:BaseController
                                               && x.Problem.Tags.All(t => UsedTags.TagsUsed.Contains(t))
                                               && _context.Problems.Any(p =>
                                                   p.Index == x.Problem.Index && p.ContestId == x.Problem.ContestId))
-                .Select(s => new Submission
+                .Select( s => new Submission
                 {
                     Author = user,
                     Problem = _context.Problems.Find(s.Problem?.ContestId, s.Problem?.Index),
-                    Verdict = "OK"
+                    Verdict = "OK",
+                    CreationTimeSeconds = s.CreationTimeSeconds
                 }).AsParallel().ToList();
             if(submissionsToAdd==null || submissionsToAdd.Count==0)continue;
             user.ProblemsAvg = submissionsToAdd.Select(x => x.Problem!.Rating).ToList().Average();
@@ -194,7 +190,7 @@ public class Seed:BaseController
         if (users is null) return;
         var usersToAdd = users.Where(x => x.Country == "Syria").
             Where(x=>x.Handle!="omar94").
-            Select(_mapper.Map<CodeforcesAccount>).Take(100).AsParallel().ToList();
+            Select(_mapper.Map<CodeforcesAccount>).Take(100).AsParallel().OrderBy(x=>1547).ToList();
 
         await _context.CodeforceseAccounts.AddRangeAsync(usersToAdd);
         await _context.SaveChangesAsync();
@@ -219,6 +215,10 @@ public class Seed:BaseController
                 await _context.CodeforceseAccounts.FirstOrDefaultAsync(x => x.Handle == user.UserName);
         }
         await _context.SaveChangesAsync();
-        await _context.SaveChangesAsync();
+    }
+    
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }

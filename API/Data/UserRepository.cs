@@ -54,7 +54,7 @@ public class UserRepository : IUserRepository
             query = query.Where(user => user.Teams == null || user.Teams.Count == 0);
         }
 
-        var result = query.ProjectTo<UserDto>(_mapper.ConfigurationProvider);
+        var result = query.OrderBy(x=>x.Id).ProjectTo<UserDto>(_mapper.ConfigurationProvider);
 
         return await PagedList<UserDto>.CreateAsync(result,
                         userParams.PageNumber, userParams.PageSize);
