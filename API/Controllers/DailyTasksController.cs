@@ -32,10 +32,9 @@ public class DailyTasksController:CrudController<DailyTaskCreateDto,DailyTaskDto
             .Where(u => u.Id == User.GetUserId())
             .FirstOrDefaultAsync();
         
-        var groups = user!.TrainingGroups?.Select(g=>g.TrainingGroup);
-        if (groups is null) return NoContent();
-        // return Ok(groups);
-        var tasks = await Repository.GetQuery().Where(t => groups.Contains(t.Group))
+        var groups = user!.TrainingGroups.Select(g=>g.TrainingGroup).ToList();
+        if (groups.IsNullOrEmpty()) return BadRequest("user is not in groups");
+        var tasks = await Repository.GetQuery().Include(x=>x.Group).Where(t => groups.Contains(t.Group))
             .ProjectTo<DailyTaskDto>(Mapper.ConfigurationProvider).ToListAsync();
         return tasks;
     }

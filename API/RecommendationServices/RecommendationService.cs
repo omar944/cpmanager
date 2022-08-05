@@ -31,12 +31,12 @@ public class RecommendationService : IRecommendationService
         }
 
         var problems = _problems.GetQuery().Include(p => p.Submissions).Include(p=>p.Tags)
-            .AsSplitQuery().ToList()
-            .Where(p => !p.Submissions!.Select(s => s.UserId).Contains(id))
+            .ToList()
+            .Where(p => p.Submissions!.All(x=>x.UserId!=id))
             .Where(p => p.Rating >= user.CodeforcesAccount.Rating - 300 &&
                         p.Rating <= user.CodeforcesAccount.Rating + 300)
-            .OrderBy(x => r.Next())
-            .Take(5).AsParallel();
+            //.OrderBy(x => r.Next())
+            .Take(5);
         return _mapper.Map<List<ProblemDto>>(problems);
     }
 

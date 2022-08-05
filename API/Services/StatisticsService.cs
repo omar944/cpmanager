@@ -46,7 +46,8 @@ public class StatisticsService : IStatisticsService
         foreach (var p in tasks.SelectMany(taskStats => taskStats.Problems!))
         {
             p.Solved = await _submissions.GetQuery()
-                .AnyAsync(s => s.ProblemContestId == p.ContestId && s.ProblemIndex == p.Index);
+                .AnyAsync(s => s.ProblemContestId == p.ContestId
+                               && s.ProblemIndex == p.Index && s.UserId == userId);
         }
         return tasks;
     }

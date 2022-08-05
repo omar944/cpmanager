@@ -35,6 +35,7 @@ public class SeedService : IHostedService
         await SeedCodeforcesUsers();
         await SeedProblems();
         await SeedSubmissions();
+        GC.Collect();
     }
     
     private async Task SeedUsers()
