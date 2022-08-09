@@ -46,6 +46,8 @@ public class RecommendationService : IRecommendationService
         if (user?.CodeforcesAccount is null) return new List<SimilarUserDto>();
 
         var query = await _users.GetQuery().Include(u => u.Teams)
+            .Include(u=>u.UserRoles).ThenInclude(r => r.Role)
+            .Where(u=>u.UserRoles.Select(x=>x.Role.Name).All(x=>x!="Coach" &&x!="Admin"))
             .Include(x=>x.CodeforcesAccount)
             .Where(u => u.Id != userId)
             .Where(u => u.Teams!.Any()==false)
